@@ -7,8 +7,8 @@ def Main():
     root.title("IDE")
     root.geometry("800x600")
     root.resizable(False, False)
-
     win = Window.Window(root)
+    root.bind("<Key>", lambda event: win.tagHighlight())
     root.mainloop()
 
 

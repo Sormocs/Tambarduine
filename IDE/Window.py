@@ -23,6 +23,10 @@ class Window:
         self.textBox.tag_configure("red", foreground="red")
         self.textBox.tag_configure("purple", foreground="purple")
 
+        self.tags = ["orange", "blue", "red", "green", "purple"]
+        self.wordList = [["for","while","if","else",],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to"],["EnCaso","Step"]]
+        self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p","q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
         self.numIdent = 0
         self.ident = "     "
@@ -69,3 +73,44 @@ class Window:
             else:
                 return self.textBox.index(index)
 
+    def tagHighlight(self):
+        start = "1.0"
+        end = "end"
+
+        for mylist in self.wordList:
+            num = int(self.wordList.index(mylist))
+
+            for word in mylist:
+                self.textBox.mark_set("matchStart", start)
+                self.textBox.mark_set("matchEnd", start)
+                self.textBox.mark_set("SearchLimit", end)
+
+                mycount = IntVar()
+
+                while True:
+                    index = self.textBox.search(word, "matchEnd", "SearchLimit", count=mycount, regexp=False)
+
+                    if index == "": break
+                    if mycount.get() == 0: break
+
+                    self.textBox.mark_set("matchStart", index)
+                    self.textBox.mark_set("matchEnd", "%s+%sc" % (index, mycount.get()))
+
+                    preIndex = "%s-%sc" % (index, 1)
+                    postIndex = "%s+%sc" % (index, mycount.get())
+
+                    if self.check(index, preIndex, postIndex):
+                        self.textBox.tag_add(self.tags[num], "matchStart", "matchEnd")
+
+    def check(self, index, pre, post):
+
+        if self.textBox.get(pre) == self.textBox.get(index):
+            pre = index
+        else:
+            if self.textBox.get(pre) in self.letters:
+                return 0
+
+        if self.textBox.get(post) in self.letters:
+            return 0
+
+        return 1
