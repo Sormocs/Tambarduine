@@ -56,6 +56,7 @@ class Window:
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
         self.textBox.bind("<Tab>", lambda event: self.IdentAux(event.widget))
+        self.textBox.bind("<BackSpace>", lambda event: self.BackSpaceFunction(event.widget))
         self.textBox.bind("<MouseWheel>", lambda event: self.MouseWheel(event.widget))
         self.textBox.bind("<Configure>", lambda event: self.MouseWheel(event.widget))
         self.master.bind("<Button-1>", lambda event: self.MouseWheel(event.widget))
@@ -88,6 +89,15 @@ class Window:
 
         return "break"
 
+    def BackSpaceFunction(self, widget):
+
+        actualLine = self.textBox.get("insert linestart", "insert lineend")
+
+        if len(actualLine) != 0:
+
+            if actualLine[-1] == "{":
+
+                self.numIdent -= 1
 
 
     def VerifyIdent(self, prevLine):
@@ -238,6 +248,7 @@ class Window:
 
     def Clear(self):
 
+        self.numIdent = 0
         self.textBox.delete("1.0", "end")
         self.lineNumbers.redraw()
 
