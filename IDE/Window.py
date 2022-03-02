@@ -1,7 +1,6 @@
 import tkinter.filedialog
 from tkinter import *
 from IDE import LineNumbers
-from tkinter import filedialog
 import json
 
 class Window:
@@ -57,7 +56,6 @@ class Window:
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
         self.textBox.bind("<Tab>", lambda event: self.IdentAux(event.widget))
-        #self.textBox.bind("<Backspace>", lambda event: self.IdentAux(event.widget))
         self.textBox.bind("<MouseWheel>", lambda event: self.MouseWheel(event.widget))
         self.textBox.bind("<Configure>", lambda event: self.MouseWheel(event.widget))
         self.master.bind("<Button-1>", lambda event: self.MouseWheel(event.widget))
@@ -89,6 +87,7 @@ class Window:
         self.textBox.insert(INSERT, self.ident)
 
         return "break"
+
 
 
     def VerifyIdent(self, prevLine):
@@ -142,6 +141,9 @@ class Window:
 
                         widget.insert("insert", self.ident)
                         self.numIdent += 1
+
+            if prevLine == "":
+                self.numIdent = 0
 
             widget.insert("insert", "\n" + self.ident * self.numIdent)
             self.lineNumbers.redraw()
