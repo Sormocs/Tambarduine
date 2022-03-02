@@ -181,9 +181,13 @@ class Window:
 
         self.GenerateJson()
         file = tkinter.filedialog.asksaveasfilename(defaultextension=".json")
-        with open(file, 'w') as f:
-            toSave = self.GenerateJson()
-            f.write(toSave)
+        try:
+            with open(file, 'w') as f:
+                toSave = self.GenerateJson()
+                f.write(toSave)
+
+        except:
+            pass
 
     def Save(self):
 
@@ -230,7 +234,8 @@ class Window:
 
     def Run(self):
 
-        pass
+        self.labelConsole.config(text="yamete kudasai ahh")
+        #pass
 
     def SendOutput(self, text):
 
