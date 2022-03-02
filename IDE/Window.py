@@ -67,16 +67,15 @@ class Window:
         self.menuBar.add_command(label="Save as", command=lambda: self.SaveAs())
         self.menuBar.add_command(label="Save", command=lambda: self.Save())
         self.menuBar.add_command(label="Clear", command=lambda: self.Clear())
-        self.menuBar.add_command(label="Compilar", command=lambda: self.Compile())
-        self.menuBar.add_command(label="Ejecutar", command=lambda: self.Run())
+        self.menuBar.add_command(label="Clear Console", command=lambda: self.ClearOutput())
+        self.menuBar.add_command(label="Compile", command=lambda: self.Compile())
+        self.menuBar.add_command(label="Run", command=lambda: self.Run())
 
         self.pathCode = ""
 
         self.master.config(menu=self.menuBar)
 
     def MouseWheel(self, event):
-
-        self.SendOutput("Mouse Wheel")
 
         self.lineNumbers.redraw()
 
@@ -237,3 +236,27 @@ class Window:
         self.outputBox.configure(state="normal")
         self.outputBox.insert("end", text + "\n")
         self.outputBox.configure(state="disabled")
+
+    def ClearOutput(self):
+
+        self.outputBox.configure(state="normal")
+        self.outputBox.delete("1.0", "end")
+        self.outputBox.configure(state="disabled")
+
+    def GetLinesCode(self):
+
+        code = self.GetText()
+        lines = code.split("\n")
+
+        return lines
+
+    def SearchLine(self, line):
+
+        lines = self.GetLinesCode()
+
+        for i in range(len(lines)):
+            if lines[i] == line:
+                return i + 1
+
+        return -1
+
