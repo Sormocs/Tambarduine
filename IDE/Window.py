@@ -77,17 +77,20 @@ class Window:
 
             self.numIdent += 1
             widget.insert("insert", "\n" + self.ident*self.numIdent)
+            self.lineNumbers.redraw()
             return "break"
 
         elif prevIndex == "}":
 
             self.numIdent -= 1
             widget.insert("insert", "\n" + self.ident*self.numIdent)
+            self.lineNumbers.redraw()
             return "break"
 
         else:
 
             widget.insert("insert", "\n" + self.ident * self.numIdent)
+            self.lineNumbers.redraw()
             return "break"
 
     def GetIndex(self, index):
