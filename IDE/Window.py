@@ -88,8 +88,6 @@ class Window:
 
         return "break"
 
-
-
     def VerifyIdent(self, prevLine):
 
         lenLine = len(prevLine)
@@ -238,6 +236,7 @@ class Window:
 
     def Clear(self):
 
+        self.numIdent = 0
         self.textBox.delete("1.0", "end")
         self.lineNumbers.redraw()
 
