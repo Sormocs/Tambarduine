@@ -11,25 +11,39 @@ class Window:
         self.master = master
         self.master.title("IDE")
 
-        self.mainCanvas = Canvas(self.master, width=800, height=600)
+        self.mainCanvas = Canvas(self.master, width=800, height=800)
         self.mainCanvas.place(x=0, y=0)
 
-        self.objectsCanvas = Canvas(self.mainCanvas, width=800, height=600)
+        self.objectsCanvas = Canvas(self.mainCanvas, width=800, height=800)
         self.objectsCanvas.place(x=0, y=0)
 
-        self.textBox = Text(self.objectsCanvas, width=94, height=37) #, bg = "black",  fg = "white")
+        self.consoleCanvas = Canvas(self.mainCanvas, width=800, height=200)
+        self.consoleCanvas.place(x=0, y=596)
 
+        self.textBox = Text(self.objectsCanvas, width=94, height=37) #, bg = "black",  fg = "white")
         self.textBox.grid(row=0, column=1, columnspan=2)
+
+        self.outputBox = Text(self.consoleCanvas, width=97, height=11)
+        self.outputBox.grid(row=1, column=0, columnspan=2)
+        self.outputBox.configure(state="disabled")
+
+        self.labelConsole = Label(self.consoleCanvas, text="Console")
+        self.labelConsole.grid(row=0, column=0, columnspan=1, sticky=W)
 
         self.scrollBar = Scrollbar(self.objectsCanvas, orient=VERTICAL)
         self.scrollBar.config(command=self.textBox.yview)
         self.scrollBar.grid(row=0, column=5, sticky=N+S)
+
+        self.scrollBarConsole = Scrollbar(self.consoleCanvas, orient=VERTICAL)
+        self.scrollBarConsole.config(command=self.outputBox.yview)
+        self.scrollBarConsole.grid(row=1, column=5, sticky=N+S)
 
         self.lineNumbers = LineNumbers.TextLineNumbers(self.objectsCanvas, width=25)
         self.lineNumbers.attach(self.textBox)
         self.lineNumbers.grid(row=0, column=0, sticky=N+S)
 
         self.textBox['yscrollcommand'] = self.scrollBar.set
+        self.outputBox['yscrollcommand'] = self.scrollBarConsole.set
 
         self.textBox.tag_configure("orange", foreground="orange")
         self.textBox.tag_configure("blue", foreground="blue")
@@ -61,6 +75,8 @@ class Window:
         self.master.config(menu=self.menuBar)
 
     def MouseWheel(self, event):
+
+        self.SendOutput("Mouse Wheel")
 
         self.lineNumbers.redraw()
 
@@ -215,3 +231,9 @@ class Window:
     def Run(self):
 
         pass
+
+    def SendOutput(self, text):
+
+        self.outputBox.configure(state="normal")
+        self.outputBox.insert("end", text + "\n")
+        self.outputBox.configure(state="disabled")
