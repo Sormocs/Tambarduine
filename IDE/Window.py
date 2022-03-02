@@ -57,6 +57,8 @@ class Window:
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
         self.textBox.bind("<MouseWheel>", lambda event: self.MouseWheel(event.widget))
+        self.textBox.bind("<Configure>", lambda event: self.MouseWheel(event.widget))
+        self.master.bind("<Button-1>", lambda event: self.MouseWheel(event.widget))
 
         self.numIdent = 0
         self.ident = "     "
@@ -171,7 +173,6 @@ class Window:
         if file != "":
             with open(file, "r") as f:
                 dicData = self.JsonToDict(f.read())
-                print(dicData)
                 self.LoadCode(dicData["code"],dicData["ident"])
                 self.pathCode = file
 
