@@ -1,5 +1,8 @@
+import tkinter.filedialog
 from tkinter import *
-from collections import deque
+from IDE import LineNumbers
+from tkinter import filedialog
+import json
 
 class Window:
 
@@ -12,10 +15,21 @@ class Window:
         self.mainCanvas.place(x=0, y=0)
 
         self.objectsCanvas = Canvas(self.mainCanvas, width=800, height=600)
-        self.objectsCanvas.place(x=100, y=100)
+        self.objectsCanvas.place(x=0, y=0)
 
-        self.textBox = Text(self.objectsCanvas, width=80, height=20)
+        self.textBox = Text(self.objectsCanvas, width=94, height=37) #, bg = "black",  fg = "white")
+
         self.textBox.grid(row=0, column=1, columnspan=2)
+
+        self.scrollBar = Scrollbar(self.objectsCanvas, orient=VERTICAL)
+        self.scrollBar.config(command=self.textBox.yview)
+        self.scrollBar.grid(row=0, column=5, sticky=N+S)
+
+        self.lineNumbers = LineNumbers.TextLineNumbers(self.objectsCanvas, width=25)
+        self.lineNumbers.attach(self.textBox)
+        self.lineNumbers.grid(row=0, column=0, sticky=N+S)
+
+        self.textBox['yscrollcommand'] = self.scrollBar.set
 
         self.textBox.tag_configure("orange", foreground="orange")
         self.textBox.tag_configure("blue", foreground="blue")
@@ -24,21 +38,31 @@ class Window:
         self.textBox.tag_configure("purple", foreground="purple")
 
         self.tags = ["orange", "blue", "red", "green", "purple"]
-        self.wordList = [["for","while","if","else",],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to"],["EnCaso","Step"]]
+        self.wordList = [["for","while","if","else","to"],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to","SET"],["EnCaso","Step","type"]]
         self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p","q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
+        self.textBox.bind("<MouseWheel>", lambda event: self.MouseWheel(event.widget))
+
         self.numIdent = 0
         self.ident = "     "
 
-        self.menuBar = Menu(self.master)
+        self.menuBar = Menu(self.master, bg="black", fg="white")
 
         self.menuBar.add_command(label="Open", command= lambda: self.Open())
         self.menuBar.add_command(label="Save as", command=lambda: self.SaveAs())
         self.menuBar.add_command(label="Save", command=lambda: self.Save())
         self.menuBar.add_command(label="Clear", command=lambda: self.Clear())
+        self.menuBar.add_command(label="Compilar", command=lambda: self.Compile())
+        self.menuBar.add_command(label="Ejecutar", command=lambda: self.Run())
+
+        self.pathCode = ""
 
         self.master.config(menu=self.menuBar)
+
+    def MouseWheel(self, event):
+
+        self.lineNumbers.redraw()
 
     def Indent(self, widget):
 
@@ -74,6 +98,9 @@ class Window:
                 return self.textBox.index(index)
 
     def tagHighlight(self):
+
+        self.lineNumbers.redraw()
+
         start = "1.0"
         end = "end"
 
@@ -114,3 +141,74 @@ class Window:
             return 0
 
         return 1
+
+    def GetText(self):
+
+        return self.textBox.get("1.0", "end")
+
+    def Open(self):
+
+        file = tkinter.filedialog.askopenfilename( filetypes=[("Code File", "*.json")])
+
+        if file != "":
+            with open(file, "r") as f:
+                dicData = self.JsonToDict(f.read())
+                print(dicData)
+                self.LoadCode(dicData["code"],dicData["ident"])
+                self.pathCode = file
+
+
+    def SaveAs(self):
+
+        self.GenerateJson()
+        file = tkinter.filedialog.asksaveasfilename(defaultextension=".json")
+        with open(file, 'w') as f:
+            toSave = self.GenerateJson()
+            f.write(toSave)
+
+    def Save(self):
+
+        if self.pathCode == "":
+            self.SaveAs()
+        else:
+            self.GenerateJson()
+            with open(self.pathCode, 'w') as f:
+                toSave = self.GenerateJson()
+                f.write(toSave)
+
+    def Clear(self):
+
+        self.textBox.delete("1.0", "end")
+        self.lineNumbers.redraw()
+
+
+    def GenerateJson(self):
+
+        dic = {"ident": self.numIdent, "code": self.GetText()}
+        json_string = json.dumps(dic)
+
+        return json_string
+
+    def JsonToDict(self, json_string):
+
+        dic = json.loads(json_string)
+
+        return dic
+
+    def LoadCode(self, code, ident):
+
+        self.numIdent = ident
+        self.textBox.delete("1.0", "end")
+        self.textBox.insert("1.0", code)
+        self.lineNumbers.redraw()
+        self.tagHighlight()
+
+    def Compile(self):
+
+        code = self.GetText()
+
+        pass
+
+    def Run(self):
+
+        pass
