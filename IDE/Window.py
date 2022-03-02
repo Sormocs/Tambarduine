@@ -56,6 +56,8 @@ class Window:
         self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p","q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
+        self.textBox.bind("<Tab>", lambda event: self.IdentAux(event.widget))
+        #self.textBox.bind("<Backspace>", lambda event: self.IdentAux(event.widget))
         self.textBox.bind("<MouseWheel>", lambda event: self.MouseWheel(event.widget))
         self.textBox.bind("<Configure>", lambda event: self.MouseWheel(event.widget))
         self.master.bind("<Button-1>", lambda event: self.MouseWheel(event.widget))
@@ -81,11 +83,35 @@ class Window:
 
         self.lineNumbers.redraw()
 
+    def IdentAux(self, event):
+
+        self.numIdent += 1
+        self.textBox.insert(INSERT, self.ident)
+
+        return "break"
+
+
+    def VerifyIdent(self, prevLine):
+
+        lenLine = len(prevLine)
+
+        if lenLine > 6:
+            if prevLine[0:5] == self.ident:
+                return True
+            else:
+                return False
+
+
     def Indent(self, widget):
+
 
         index1 = widget.index("insert")
         index2 = "%s-%sc" % (index1, 1)
         prevIndex = widget.get(index2, index1)
+
+        prevIndentLine = widget.index(index1 + "linestart")
+        prevLine = widget.get(prevIndentLine, index1 + "lineend")
+
 
         if self.numIdent < 0:
             self.numIdent = 0
@@ -105,6 +131,17 @@ class Window:
             return "break"
 
         else:
+
+            if self.VerifyIdent(prevLine) and self.numIdent == 0:
+
+                for i in range(0, len(prevLine), 5):
+
+                    print(len(prevLine[i:i+5]),self.ident)
+
+                    if prevLine[i:i+5] == self.ident:
+
+                        widget.insert("insert", self.ident)
+                        self.numIdent += 1
 
             widget.insert("insert", "\n" + self.ident * self.numIdent)
             self.lineNumbers.redraw()
@@ -181,9 +218,11 @@ class Window:
 
         self.GenerateJson()
         file = tkinter.filedialog.asksaveasfilename(defaultextension=".json")
-        with open(file, 'w') as f:
-            toSave = self.GenerateJson()
-            f.write(toSave)
+
+        if file != "":
+            with open(file, 'w') as f:
+                toSave = self.GenerateJson()
+                f.write(toSave)
 
     def Save(self):
 
@@ -260,4 +299,3 @@ class Window:
                 return i + 1
 
         return -1
-
