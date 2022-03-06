@@ -5,7 +5,18 @@ import json
 
 class Window:
 
+    """
+
+    Class window is the main window of the IDE.
+
+    """
+
     def __init__(self, master):
+
+        """
+        init method of the class Window.
+        :param master: canva of the IDE
+        """
 
         self.master = master
         self.master.title("IDE")
@@ -80,9 +91,21 @@ class Window:
 
     def MouseWheel(self, event):
 
+        """
+        Method that manages the mouse wheel to update the lines of code
+        :param event: event that is triggered when the mouse wheel is moved
+        :return: None
+        """
+
         self.lineNumbers.redraw()
 
     def IdentAux(self, event):
+
+        """
+        Method that manages the indentation of the code with the tab key
+        :param event: the tab key
+        :return: None
+        """
 
         self.numIdent += 1
         self.textBox.insert(INSERT, self.ident)
@@ -90,6 +113,12 @@ class Window:
         return "break"
 
     def BackSpaceFunction(self, widget):
+
+        """
+        Method that manages the backspace key to remove the indentation
+        :param widget: the widget that is being modified textbox
+        :return: None
+        """
 
         actualLine = self.textBox.get("insert linestart", "insert lineend")
 
@@ -102,6 +131,12 @@ class Window:
 
     def VerifyIdent(self, prevLine):
 
+        """
+        Method that verifies if the line of code is indented or not
+        :param prevLine: string that is the previous line of code
+        :return: None
+        """
+
         lenLine = len(prevLine)
 
         if lenLine > 6:
@@ -113,6 +148,11 @@ class Window:
 
     def Indent(self, widget):
 
+        """
+        Method that manages the indentation of the code with the return key
+        :param widget: textbox widget that is being modified
+        :return: None
+        """
 
         index1 = widget.index("insert")
         index2 = "%s-%sc" % (index1, 1)
@@ -160,6 +200,13 @@ class Window:
             return "break"
 
     def GetIndex(self, index):
+
+        """
+        Method that gets the index of the line of code
+        :param index: int that is the index of the line of code
+        :return: int
+        """
+
         while True:
             if self.textBox.get(index) == " ":
                 index = "%s+%sc" % (index, 1)
@@ -167,6 +214,11 @@ class Window:
                 return self.textBox.index(index)
 
     def tagHighlight(self):
+
+        """
+        Method that highlights the code in reserved words
+        :return: None
+        """
 
         self.lineNumbers.redraw()
 
@@ -200,6 +252,14 @@ class Window:
 
     def check(self, index, pre, post):
 
+        """
+        Method that checks if the word is a reserved word
+        :param index: int
+        :param pre: int
+        :param post: int
+        :return: bool
+        """
+
         if self.textBox.get(pre) == self.textBox.get(index):
             pre = index
         else:
@@ -213,9 +273,19 @@ class Window:
 
     def GetText(self):
 
+        """
+        Get the code of the textbox
+        :return: string of the code
+        """
+
         return self.textBox.get("1.0", "end")
 
     def Open(self):
+
+        """
+        Method that opens a file
+        :return: None
+        """
 
         file = tkinter.filedialog.askopenfilename( filetypes=[("Code File", "*.json")])
 
@@ -228,6 +298,11 @@ class Window:
 
     def SaveAs(self):
 
+        """
+        Method that saves the code as a file
+        :return: None
+        """
+
         self.GenerateJson()
         file = tkinter.filedialog.asksaveasfilename(defaultextension=".json")
 
@@ -237,6 +312,11 @@ class Window:
                 f.write(toSave)
 
     def Save(self):
+
+        """
+        Method that saves the code
+        :return:
+        """
 
         if self.pathCode == "":
             self.SaveAs()
@@ -248,12 +328,22 @@ class Window:
 
     def Clear(self):
 
+        """
+        Method that clears the code in the textbox
+        :return: None
+        """
+
         self.numIdent = 0
         self.textBox.delete("1.0", "end")
         self.lineNumbers.redraw()
 
 
     def GenerateJson(self):
+
+        """
+        Method that generates the json file
+        :return: Json object
+        """
 
         dic = {"ident": self.numIdent, "code": self.GetText()}
         json_string = json.dumps(dic)
@@ -262,11 +352,24 @@ class Window:
 
     def JsonToDict(self, json_string):
 
+        """
+        Method that converts a json file to a dictionary
+        :param json_string: json object
+        :return: dictionary
+        """
+
         dic = json.loads(json_string)
 
         return dic
 
     def LoadCode(self, code, ident):
+
+        """
+        Method that loads the code
+        :param code: string of the code
+        :param ident: int of the identation
+        :return: none
+        """
 
         self.numIdent = ident
         self.textBox.delete("1.0", "end")
@@ -276,15 +379,31 @@ class Window:
 
     def Compile(self):
 
+        """
+        Method that compiles the code
+        :return:
+        """
+
         code = self.GetText()
 
         pass
 
     def Run(self):
 
+        """
+        Method that runs the code
+        :return:
+        """
+
         pass
 
     def SendOutput(self, text):
+
+        """
+        Method that sends the output to the textbox in the bottom
+        :param text: string
+        :return: None
+        """
 
         self.outputBox.configure(state="normal")
         self.outputBox.insert("end", text + "\n")
@@ -292,11 +411,21 @@ class Window:
 
     def ClearOutput(self):
 
+        """
+        Method that clears the output
+        :return: None
+        """
+
         self.outputBox.configure(state="normal")
         self.outputBox.delete("1.0", "end")
         self.outputBox.configure(state="disabled")
 
     def GetLinesCode(self):
+
+        """
+        Method that gets the lines of the code
+        :return: list of strings
+        """
 
         code = self.GetText()
         lines = code.split("\n")
@@ -304,6 +433,12 @@ class Window:
         return lines
 
     def SearchLine(self, line):
+
+        """
+        Search a line in the code
+        :param line: string
+        :return: int
+        """
 
         lines = self.GetLinesCode()
 
