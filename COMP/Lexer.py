@@ -6,7 +6,7 @@ from COMP.ply import lex
 
 tokens = ['ID','VAR','NUMBER', 'PLUS', 'MINUS', 'DENIAL', 'TIMES', 'POWER', 'DIV', 'FULLDIV', 'MODULE',
                  'COMMA', 'SEMICOLOMN', 'AT', 'GREATER', 'SMALLER', 'RPAR', 'LPAR', 'LBRACK', 'RBRACK', 'GREATEQ',
-                 'SMALLEQ', 'COMMENT','WHITESPACE','EQUALS']
+                 'SMALLEQ', 'COMMENT','WHITESPACE','EQUALS','POINT']
 
 reserved = {'SET': 'SET',
             'Def': 'DEF',
@@ -26,7 +26,7 @@ reserved = {'SET': 'SET',
 
 token = tokens + list(reserved.values())
 
-# t_POINT = r'[.]'
+t_POINT = r'[.]'
 t_COMMA = r'[,]'
 t_SEMICOLOMN = '[;]'
 t_PLUS = r'\+'
@@ -79,11 +79,10 @@ def t_error(t):
 def t_NUMBER(t):
     r'\d+'
     try:
-        t.value = int(t.value)
+        t.value = float(t.value)
     except ValueError:
         print("Integer value too large %s" % t.value)
         t.value = 0
-    # print "parsed number %s" % repr(t.value)
     return t
 
 
