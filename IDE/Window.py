@@ -1,6 +1,7 @@
 import tkinter.filedialog
 from tkinter import *
 from IDE import LineNumbers
+from COMP import Lexer
 import json
 
 class Window:
@@ -277,6 +278,8 @@ class Window:
     def Compile(self):
 
         code = self.GetText()
+        Lexer.TokenGen(code)
+
 
         pass
 
