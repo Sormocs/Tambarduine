@@ -223,16 +223,17 @@ class statement_DEF():
         print("Executing...")
         temp = self.block
         while (temp != None):
-            print(self.block.GetAction().GetType())
+            print("Dentro del While")
             if (self.block.type == "sentence"):
                 self.block.GetAction().Execute(self.vars)
             else:
-                print("Statement Bloque:" + self.block.GetAction().GetType())
+                print("Statement Bloque: " + self.block.GetAction().GetSentence().GetValue())
             temp = temp.GetNext()
 
-class print():
-    def __init__(self, name):
-        self.name = name
+
+class PrintConsole():
+    def __init__(self, sentence):
+        self.sentence = sentence
 
     def Execute(self):
         pass

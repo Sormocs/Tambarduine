@@ -161,7 +161,7 @@ def p_number(p):
 
 def p_float(p):
     '''float : NUMBER POINT NUMBER'''
-    p[0] = str(p[1])+str(p[2])+str(p[3])
+    p[0] = str(p[1])+str(p[2])+str(p[3]) + ","
 
 def p_true(p):
     '''true : TRUE'''
@@ -210,7 +210,7 @@ def p_blockList(p):
     '''blockList : block
      | blockList block'''
     try:
-        p[1].SetNext(p[2])
+        p[2].SetNext(p[1])
         p[0] = p[1]
     except (IndexError):
         p[0] = p[1]
@@ -240,4 +240,4 @@ def Parsear(cadena,box):
         semantic.methods[0].Execute()
     else:
         print("Error, principal no detectada")
-    semantic.canvas = box
+    semantic.box = box
