@@ -157,7 +157,7 @@ class statement_set():
         return self.sentence
 
     def Execute(self,vars):
-        value = self.sentence.Execute()
+        value = self.sentence.Execute(vars)
         if (value == "Error"):
             pass
         elif (value == True or value == False):
@@ -224,8 +224,9 @@ class statement_DEF():
         temp = self.block
         while (temp != None):
             print("Dentro del While")
-            if (self.block.type == "sentence"):
+            if (self.block.type == "set"):
                 self.block.GetAction().Execute(self.vars)
+                print("Statement Bloque: " + self.block.GetAction().GetSentence().GetValue())
             else:
                 print("Statement Bloque: " + self.block.GetAction().GetSentence().GetValue())
             temp = temp.GetNext()
@@ -264,6 +265,7 @@ class sentence():
         return self.sentype
 
     def Execute(self,vars):
+        print("Sentence ejecutando")
         if self.sentype == "operation":
             print("Sentence OP")
 
