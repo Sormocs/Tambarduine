@@ -26,13 +26,15 @@ class Acciones {
 
 public:
     void Agregar(string movimiento, int num){
+
         struct Nodo *nuevo = new Nodo;
         nuevo->movimiento = movimiento;
         nuevo->num = num;
         nuevo->sig = NULL;
+
         if(inicio == NULL){
             inicio = nuevo;
-        }else{
+        } else{
             struct Nodo *aux = inicio;
             while(aux->sig != NULL){
                 aux = aux->sig;
@@ -47,6 +49,7 @@ public:
     }
 
     Node* PrimeroYEliminar(){
+
         struct Nodo *aux = inicio;
         inicio = inicio->sig;
         longitud--;
@@ -58,6 +61,7 @@ public:
     }
 
     void Vaciar(){
+
         struct Nodo *aux = inicio;
         while(aux != NULL){
             struct Nodo *aux2 = aux;
@@ -70,19 +74,21 @@ public:
 };
 
 class Tambarduine{
+
 private:
     int tempoNum = 1;
     int tempo = 2;
     int metrica = 4;
 
     int buzzPin = 8;
+    int ledPin = 13;
     int vertServoPin = 10;
     int horiServoPin = 9;
     int pinzaServoPin = 7;
     int ejePinzaServoPin = 6;
 
     // órdenes
-    string orden;
+    Acciones acciones;
     bool configurado = false;
     bool metronomo = false;
 
@@ -91,7 +97,7 @@ private:
 
     Servo vertServo, horiServo, pinzaServo, ejePinzaServo;
 
-    int ledPin = 13;
+
     String option,value1,value2;
     int valueAction;
     char action;
@@ -317,22 +323,27 @@ private:
 
                 case 'A':
                     //Llama a abanico con el parámetro valueAction como dirección
-                    Abanico(valueAction);
+                    //Abanico(valueAction);
+                    acciones.Agregar("abanico", valueAction);
                 case 'V':
                     //Llama a vertical con el parámetro valueAction como dirección
-                    Vertical(valueAction);
+                    //Vertical(valueAction);
+                    acciones.Agregar("vertical", valueAction);
                     break;
                 case 'P':
                     //Llama a Percitor con el parámetro valueAction
-                    Percutor(valueAction);
+                    //Percutor(valueAction);
+                    acciones.Agregar("percutor", valueAction);
                     break;
                 case 'G':
                     //Llamada a Golpe
-                    Golpe();
+                    //Golpe();
+                    acciones.Agregar("golpe", 0);
                     break;
                 case 'T':
                     //Llamada a Vibrato con el parametro valueAction como numero de vibraciones
-                    Vibratto(valueAction);
+                    //Vibratto(valueAction);
+                    acciones.Agregar("vibrato", valueAction);
                     break;
                 case 'M':
                     //Llamada a Metronomo para actualizar el numero con valueAction
