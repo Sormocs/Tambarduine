@@ -2,11 +2,11 @@
 
 #define PINZA_ABIERTA 110
 #define PINZA_CERRADA 7
-#define PINZA_CENTRAL 60
+#define PINZA_NEUTRAL 60
 
-#define PINZA_HORIZONTAL 80
-#define PINZA_VERTICAL 180
-#define PINZA_NEUTRAL 125
+#define EJE_PINZA_HORIZONTAL 80
+#define EJE_PINZA_VERTICAL 180
+#define EJE_PINZA_NEUTRAL 125
 
 #define HORIZONTAL_NEUTRAL 95
 #define VERTICAL_NEUTRAL 147
@@ -57,55 +57,77 @@ private:
     void Percutor(int orden){
         switch (orden){
             case 1:
-                ejePinzaServo.write(PINZA_HORIZONTAL);
+                //Golpea el pandero por la derecha
+                ejePinzaServo.write(EJE_PINZA_HORIZONTAL);  //Coloca la pinza en horizontal
                 delay(300);
-                horiServo.write(HORIZONTAL_NEUTRAL-30);
+                horiServo.write(HORIZONTAL_NEUTRAL-30); //Gira el pandero hacia la derecha
                 delay(200);
-                ejePinzaServo.write(PINZA_NEUTRAL);
-                horiServo.write(HORIZONTAL_NEUTRAL);
+                ejePinzaServo.write(EJE_PINZA_NEUTRAL); //Coloca la pinza en diagonal
+                horiServo.write(HORIZONTAL_NEUTRAL);    //Gira el pandero hacia la posición neutral
                 delay(500);
                 break;
 
             case 2:
-                horiServo.write(115);
+                //Golpea el pandero por la izquierda
+                ejePinzaServo.write(EJE_PINZA_HORIZONTAL);  //Coloca la pinza en horizontal
                 delay(300);
-                horiServo.write(90);
-                delay(700);
+                horiServo.write(HORIZONTAL_NEUTRAL+30); //Gira el pandero hacia la izquierda
+                delay(200);
+                ejePinzaServo.write(EJE_PINZA_NEUTRAL);     //Coloca la pinza en diagonal
+                horiServo.write(HORIZONTAL_NEUTRAL);    //Gira el pandero hacia la posición neutral
+                delay(500);
                 break;
 
             case 3:
-                vertServo.write(115);
+                //Golpea el pandero por arriba
+                ejePinzaServo.write(EJE_PINZA_VERTICAL);//Coloca la pinza en vertical
+                pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
                 delay(300);
-                vertServo.write(90);
-                delay(700);
+                vertServo.write(VERTICAL_NEUTRAL-30);   //Inclina el pandero hacia abajo
+                delay(200);
+                ejePinzaServo.write(EJE_PINZA_NEUTRAL); //Coloca la pinza en diagonal
+                pinzaServo.write(PINZA_NEUTRAL);        //Coloca la pinza en posición neutral
+                vertServo.write(VERTICAL_NEUTRAL);      //Inclina el pandero a la posición neutral
                 break;
 
             case 4:
-                vertServo.write(65);
+                //Golpea el pandero por abajo
+                ejePinzaServo.write(EJE_PINZA_VERTICAL);    //Coloca la pinza en vertical
+                pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
                 delay(300);
-                vertServo.write(90);
-                delay(700);
+                vertServo.write(VERTICAL_NEUTRAL+30);   //Inclina el pandero hacia arriba
+                delay(200);
+                ejePinzaServo.write(EJE_PINZA_NEUTRAL);     //Coloca la pinza en diagonal
+                vertServo.write(VERTICAL_NEUTRAL);      //inclina el pandero a la posición neutral
+                pinzaServo.write(PINZA_NEUTRAL);        //Coloca la pinza en posición neutral
+                delay(500);
                 break;
 
             case 5:
-                pinzaServo.write(90); // apertura
-                delay(200);
-                vertServo.write(135);
-                delay(500);
-                vertServo.write(90);
-                pinzaServo.write(90);
+                //Golpea el pandero por la izquierda y la derecha a la vez
+                pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
+                ejePinzaServo.write(EJE_PINZA_HORIZONTAL);  //Coloca la pinza en horizontal
                 delay(300);
+                vertServo.write(VERTICAL_NEUTRAL-45);   //Inclina el pandero hacia abajo
+                delay(200);
+                vertServo.write(VERTICAL_NEUTRAL);      //Inclina el pandero a la posición neutral
+                ejePinzaServo.write(EJE_PINZA_NEUTRAL);     //Coloca la pinza en diagonal
+                pinzaServo.write(PINZA_NEUTRAL);        //Coloca la pinza en posición neutral
+
                 break;
+
             case 6:
-                ejePinzaServo.write(45); // giro servo
-                pinzaServo.write(90); // apertura pinza
-                delay(250);
-                horiServo.write(45);
-                delay(500);
-                horiServo.write(90);
-                ejePinzaServo.write(90);
-                pinzaServo.write(90);
+                //Golpea el pandero por arriba y abajo a la vez
+                ejePinzaServo.write(EJE_PINZA_VERTICAL);//Coloca la pinza en vertical
+                pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
+                delay(300);
+                horiServo.write(HORIZONTAL_NEUTRAL-45); //Gira el pandero hacia la derecha
+                delay(200);
+                horiServo.write(HORIZONTAL_NEUTRAL);    //Gira el pandero hacia la posición neutral
+                ejePinzaServo.write(EJE_PINZA_NEUTRAL);     //Coloca la pinza en diagonal
+                pinzaServo.write(PINZA_NEUTRAL);        //Coloca la pinza en posición neutral
                 break;
+
             default:
                 return;
         }
@@ -117,43 +139,48 @@ private:
     }
 
     void Golpe(){
-        pinzaServo.write(PINZA_CERRADA);
-        ejePinzaServo.write(PINZA_HORIZONTAL);
-        delay(500);
-        vertServo.write(VERTICAL_NEUTRAL+30);
+        pinzaServo.write(PINZA_CERRADA);                //Cierra la pinza
+        ejePinzaServo.write(EJE_PINZA_HORIZONTAL);      //Coloca la pinza en horizontal
         delay(300);
-        pinzaServo.write(PINZA_CENTRAL);
-        vertServo.write(VERTICAL_NEUTRAL);
-        ejePinzaServo.write(PINZA_NEUTRAL);
+        vertServo.write(VERTICAL_NEUTRAL-50);           //Inclina el pandero hacia abajo
         delay(200);
+        vertServo.write(VERTICAL_NEUTRAL);              //Inclina el pandero a la posición neutral
+        pinzaServo.write(PINZA_NEUTRAL);                //Coloca la pinza en posición neutral
+        ejePinzaServo.write(EJE_PINZA_NEUTRAL);         //Coloca la pinza en diagonal
+        delay(500);
         if (tempo > 1) {
             MetronomoEspec(tempo*1000-1000);
         }
     }
 
-    void Vibratto(int duracion){
+    void Vibratto(int movimientos){
 
-        for (int i=0; i<duracion; i++){
-            horiServo.write(HORIZONTAL_NEUTRAL-10);
-            delay(100);
-            if (i == duracion*tempo -1) {
-                horiServo.write(HORIZONTAL_NEUTRAL);
-
+        for (int i = 1; i < movimientos; i++) {
+            if (i % 2 == 0) {
+                horiServo.write(HORIZONTAL_NEUTRAL-10);
             } else {
                 horiServo.write(HORIZONTAL_NEUTRAL+10);
             }
             delay(100);
-            if (duracion * 200 == tempo) {
+            if (i % 10 == 0) {
                 MetronomoEspec(0);
             }
         }
+
+        horiServo.write(HORIZONTAL_NEUTRAL);
+
+        if (movimientos % 10 != 0) {
+            MetronomoEspec(movimientos % 10 * 100);
+        }
+
+
     }
 
     void Restablecer(){
         vertServo.write(VERTICAL_NEUTRAL);
         horiServo.write(HORIZONTAL_NEUTRAL);
-        pinzaServo.write(PINZA_CENTRAL);
-        ejePinzaServo.write(PINZA_NEUTRAL+15);
+        pinzaServo.write(PINZA_NEUTRAL);
+        ejePinzaServo.write(EJE_PINZA_NEUTRAL);
     }
 
     void SetTempo(int nuevoTempo){
