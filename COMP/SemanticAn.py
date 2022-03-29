@@ -156,8 +156,14 @@ class statement_set():
     def GetSentence(self):
         return self.sentence
 
-    def Execute(self):
-
+    def Execute(self,vars):
+        value = self.sentence.Execute()
+        if (value == "Error"):
+            pass
+        elif (value == True or value == False):
+            pass
+        elif (value == "Funcion"): #CAMBIAR POR ALGO QUE DETECTE LAS FUNCIONES
+            pass #Error
         var = Var(self.var,self.sentence)
 #
 #
@@ -201,6 +207,7 @@ class statement_DEF():
         self.name = name
         self.block = block
         self.type = "def"
+        self.vars = []
         methods.append(self)
 
     def GetType(self):
@@ -216,11 +223,11 @@ class statement_DEF():
         print("Executing...")
         temp = self.block
         while (temp != None):
-            print(self.block.GetBlock().GetType())
+            print(self.block.GetAction().GetType())
             if (self.block.type == "sentence"):
-                print("Sentence Bloque: "+ self.block.GetBlock().GetValue())
+                self.block.GetAction().Execute(self.vars)
             else:
-                print("Statement Bloque:"+ self.block.GetBlock().GetType())
+                print("Statement Bloque:" + self.block.GetAction().GetType())
             temp = temp.GetNext()
 
 class print():
@@ -255,14 +262,14 @@ class sentence():
     def GetType(self):
         return self.sentype
 
-    def Execute(self):
+    def Execute(self,vars):
         if self.sentype == "operation":
             print("Sentence OP")
 
 class Block():
 
-    def __init__(self,block,block_type):
-        self.block = block
+    def __init__(self, accion, block_type):
+        self.action = accion
         self.type = block_type
         self.next = None
 
@@ -272,11 +279,14 @@ class Block():
     def GetNext(self):
         return self.next
 
-    def GetBlock(self):
-        return self.block
+    def GetAction(self):
+        return self.action
 
     def GetType(self):
         return self.type
+
+    def Execute(self,vars):
+        self.action.Execute(vars)
 
 
 class Var():
