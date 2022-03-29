@@ -1,6 +1,7 @@
 import tkinter.filedialog
 from tkinter import *
 from IDE import LineNumbers
+from COMP import Syntax
 from COMP import Lexer
 import json
 
@@ -52,7 +53,7 @@ class Window:
         self.textBox.tag_configure("purple", foreground="purple")
 
         self.tags = ["orange", "blue", "red", "green", "purple"]
-        self.wordList = [["for","while","if","else","to"],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to","SET"],["EnCaso","Step","type"]]
+        self.wordList = [["WHILE","FOR","for","while","if","else","to"],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to","SET"],["EnCaso","Step","type"]]
         self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p","q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
@@ -278,7 +279,8 @@ class Window:
     def Compile(self):
 
         code = self.GetText()
-        Lexer.TokenGen(code)
+        #Lexer.TokenGen(code)
+        Syntax.Parsear(code,self.outputBox)
 
 
         pass

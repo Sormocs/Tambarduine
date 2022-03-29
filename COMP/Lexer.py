@@ -4,31 +4,16 @@ sys.path.insert(0, "../..")
 
 from COMP.ply import lex
 
-tokens = ['ID','VAR','NUMBER', 'PLUS', 'MINUS', 'DENIAL', 'TIMES', 'POWER', 'DIV', 'FULLDIV', 'MODULE',
-                 'COMMA', 'SEMICOLOMN', 'AT', 'GREATER', 'SMALLER', 'RPAR', 'LPAR', 'LBRACK', 'RBRACK', 'GREATEQ',
-                 'SMALLEQ', 'COMMENT','WHITESPACE','EQUALS','POINT']
+reserved = ['SET','DEF','IF','FOR','ELSE','ENCASO','ENTONS','TO','STEP','CUANDO','SINO','FINENCASO',
+            'TRUE','FALSE','WHILE']
 
-reserved = {'SET': 'SET',
-            'Def': 'DEF',
-            'if': 'IF',
-            'for': 'FOR',
-            'else': 'else',
-            'EnCaso': 'EnCaso',
-            'EnTons': 'EnTons',
-            'println!': 'PRINT',
-            'to': 'TO',
-            'Step': 'STEP',
-            'Cuando': 'CUANDO',
-            'SiNo': 'SINO',
-            'Fin-EnCaso': 'FINENCASO',
-            'True': 'TRUE',
-            'False': 'FALSE'}
-
-token = tokens + list(reserved.values())
+tokens = reserved +['ID','VAR','NUMBER', 'PLUS', 'MINUS', 'TIMES', 'POWER', 'DIV', 'FULLDIV','QUOT',
+                    'MODULE','COMMA', 'SEMICOLOMN','GREATER', 'SMALLER', 'RPAR', 'LPAR', 'LBRACK',
+                    'RBRACK', 'GREATEQ','SMALLEQ','EQUALS','POINT','SAME','DIFF','PRINT']
 
 t_POINT = r'[.]'
 t_COMMA = r'[,]'
-t_SEMICOLOMN = '[;]'
+t_SEMICOLOMN = r'[;]'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
@@ -45,12 +30,25 @@ t_SMALLEQ = r'>='
 t_ignore = r' '
 t_EQUALS = r'=='
 t_FULLDIV = r'\\'
+t_SAME = r'='
+t_DIFF = r'<>'
+t_QUOT = r'"'
 
 
 def t_COMMENT(t):
     r'\#.*'
     pass
 
+def t_ID(t):
+    r'[A-Za-z_][a-zA-Z!]*'
+    if t.value.upper() in reserved:
+        t.value = t.value.upper()
+        t.type = t.value
+    return t
+
+def t_PRINT(t):
+    r'println!'
+    return t
 
 def t_newline(t):
     r'\n+'
@@ -58,19 +56,8 @@ def t_newline(t):
 
 
 def t_VAR(t):
-    r'@[A-Za-z_][\w_]*'
-    if t.value.upper() in reserved:
-        t.value = t.value.upper()
-        t.type = t.value
+    r'@[a-zA-Z_][a-zA-Z0-9_?!$]{2,10}'
     return t
-
-def t_ID(t):
-    r'[A-Za-z_][\w_]*'
-    if t.value.upper() in reserved:
-        t.value = t.value.upper()
-        t.type = t.value
-    return t
-
 
 def t_error(t):
     print("Illegal character %s" % repr(t.value[0]))
@@ -80,7 +67,7 @@ def t_error(t):
 def t_NUMBER(t):
     r'\d+'
     try:
-        t.value = float(t.value)
+        t.value = int(t.value)
     except ValueError:
         print("Integer value too large %s" % t.value)
         t.value = 0
@@ -91,6 +78,7 @@ analyzer = lex.lex()
 
 
 def TokenGen(cadena):
+    analyzer.lineno = 0
     analyzer.input(cadena)
     while True:
         tok = analyzer.token()
