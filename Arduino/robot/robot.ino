@@ -14,6 +14,61 @@
 #define buzzFrec1 1600
 #define buzzFrec2 800
 
+struct Nodo {
+    string movimiento;
+    int num;
+    struct Nodo *sig;
+};
+
+class Acciones {
+    struct Nodo *inicio;
+    int longitud;
+
+public:
+    void Agregar(string movimiento, int num){
+        struct Nodo *nuevo = new Nodo;
+        nuevo->movimiento = movimiento;
+        nuevo->num = num;
+        nuevo->sig = NULL;
+        if(inicio == NULL){
+            inicio = nuevo;
+        }else{
+            struct Nodo *aux = inicio;
+            while(aux->sig != NULL){
+                aux = aux->sig;
+            }
+            aux->sig = nuevo;
+        }
+        longitud++;
+    }
+
+    Node* Primero(){
+        return inicio;
+    }
+
+    Node* PrimeroYEliminar(){
+        struct Nodo *aux = inicio;
+        inicio = inicio->sig;
+        longitud--;
+        return aux;
+    }
+
+    int Longitud(){
+        return longitud;
+    }
+
+    void Vaciar(){
+        struct Nodo *aux = inicio;
+        while(aux != NULL){
+            struct Nodo *aux2 = aux;
+            aux = aux->sig;
+            delete aux2;
+        }
+        inicio = NULL;
+        longitud = 0;
+    }
+};
+
 class Tambarduine{
 private:
     int tempoNum = 1;
@@ -25,6 +80,11 @@ private:
     int horiServoPin = 9;
     int pinzaServoPin = 7;
     int ejePinzaServoPin = 6;
+
+    // órdenes
+    string orden;
+    bool configurado = false;
+    bool metronomo = false;
 
     static Tambarduine *instance;
 
@@ -241,41 +301,56 @@ private:
         return instance;
     }
 
+    void Config(){
+
+        while(!configurado) {
+
+            option = Serial.readString();
+            value1 = getValue(option,'#',0);
+            value2 = getValue(option,'#',1);
+
+            action = value1.charAt(0);
+            valueAction = value2.toInt();
+
+
+            switch (action){
+
+                case 'A':
+                    //Llama a abanico con el parámetro valueAction como dirección
+                    Abanico(valueAction);
+                case 'V':
+                    //Llama a vertical con el parámetro valueAction como dirección
+                    Vertical(valueAction);
+                    break;
+                case 'P':
+                    //Llama a Percitor con el parámetro valueAction
+                    Percutor(valueAction);
+                    break;
+                case 'G':
+                    //Llamada a Golpe
+                    Golpe();
+                    break;
+                case 'T':
+                    //Llamada a Vibrato con el parametro valueAction como numero de vibraciones
+                    Vibratto(valueAction);
+                    break;
+                case 'M':
+                    //Llamada a Metronomo para actualizar el numero con valueAction
+                    SetTempo(valueAction);
+                    metronomo = true;
+                    break;
+            }
+        }
+
+    }
+
     void Bucle(){
-        option = Serial.readString();
-        value1 = getValue(option,'#',0);
-        value2 = getValue(option,'#',1);
+        if (!configurado){
+            Config();
+        } else if (metronomo){
 
-        action = value1.charAt(0);
-        valueAction = value2.toInt();
+        } else {
 
-
-        switch (action){
-
-            case 'A':
-                //Llama a abanico con el parámetro valueAction como dirección
-                Abanico(valueAction);
-            case 'V':
-                //Llama a vertical con el parámetro valueAction como dirección
-                Vertical(valueAction);
-                break;
-            case 'P':
-                //Llama a Percitor con el parámetro valueAction
-                Percutor(valueAction);
-                break;
-            case 'G':
-                //Llamada a Golpe
-                Golpe();
-                break;
-            case 'T':
-                //Llamada a Vibrato con el parametro valueAction como numero de vibraciones
-                Vibratto(valueAction);
-                break;
-            case 'M':
-                //Llamada a Metronomo para actualizar el numero con valueAction
-                SetTempo(valueAction);
-
-                break;
         }
     }
 
