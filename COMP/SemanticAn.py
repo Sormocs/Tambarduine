@@ -1,3 +1,5 @@
+from COMP.ply.yacc import YaccSymbol
+
 nums = "0123456789"
 prim_symbols = ["*", "%", "//", "/"]
 sec_symbols = ["+", "-"]
@@ -220,16 +222,30 @@ class statement_DEF():
         return self.block
 
     def Execute(self):
-        print("Executing...")
+        #print("Executing...")
         temp = self.block
+        temp2 = None
         while (temp != None):
-            print("Dentro del While")
-            if (self.block.type == "set"):
-                self.block.GetAction().Execute(self.vars)
-                print("Statement Bloque: " + self.block.GetAction().GetSentence().GetValue())
+            if (type(temp) != YaccSymbol):
+                if (len(temp) > 1):
+                    temp2 = temp[1].value
+
+                else:
+                    temp2 = temp[0].value
             else:
-                print("Statement Bloque: " + self.block.GetAction().GetSentence().GetValue())
-            temp = temp.GetNext()
+                temp2 = temp.value
+
+            print(temp2.__dict__)
+            if (temp2.GetType() == "set"):
+                temp2.GetAction().Execute(self.vars)
+                print("Statement Bloque: " + temp2.GetAction().GetSentence().GetValue())
+            else:
+                pass
+                #print("Statement Bloque: " + self.block.GetAction().GetSentence().GetValue())
+            if (type(temp) == YaccSymbol): #al final
+                temp = None
+            else:
+                temp = temp[0].value
 
 
 class PrintConsole():

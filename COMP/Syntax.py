@@ -21,8 +21,8 @@ precedence = (
 def p_statement_set(p):
     '''statement : SET VAR COMMA sentence SEMICOLOMN'''
     p[0] = [semantic.statement_set(p[2],p[4][0])] +["set"]
-    print("Valor: "+p[0][0].GetSentence().GetValue())
-    print("Tipo: " + p[0][0].GetSentence().GetType())
+    #print("Valor: "+p[0][0].GetSentence().GetValue())
+    #print("Tipo: " + p[0][0].GetSentence().GetType())
 #
 #
 def p_statement_for(p):
@@ -209,14 +209,17 @@ def p_block(p):
 def p_blockList(p):
     '''blockList : block
      | blockList block'''
-    try:
-        p[2].SetNext(p[1])
-        p[0] = p[1]
-    except (IndexError):
-        p[0] = p[1]
+    if len(p.slice) > 2:
+        p[0] = (p.slice[1],p.slice[2])
+    else:
+        p[0] = (p.slice[1])
+
+    # print(p.__dict__)
+    # print(p.slice[1])
+
+    #if p.slice.len() <
 
 
-#
 def p_empty(p):
     '''empty :'''
     pass
@@ -236,7 +239,6 @@ def Parsear(cadena,box):
     result = parser.parse(cadena)
     print(semantic.methods[0].GetName())
     if (semantic.methods[0].GetName() == "@Principal"):
-        print("Entra")
         semantic.methods[0].Execute()
     else:
         print("Error, principal no detectada")
