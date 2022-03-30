@@ -14,17 +14,27 @@
 #define buzzFrec1 1600
 #define buzzFrec2 800
 
+/*
+ * @brief Estructura de los nodos de la lista
+ */
 struct Nodo {
     string movimiento;
     int num;
     struct Nodo *sig;
 };
 
+/*
+ * @brief Lista enlazada de los movimientos
+ */
 class Acciones {
     struct Nodo *inicio;
     int longitud;
 
 public:
+    /*
+     * @brief Constructor de la lista
+     * @param string, int
+     */
     void Agregar(string movimiento, int num){
 
         struct Nodo *nuevo = new Nodo;
@@ -44,11 +54,19 @@ public:
         longitud++;
     }
 
-    Node* Primero(){
+    /*
+     * @brief Devuelve el primer movimiento de la lista
+     * @return Nodo
+     */
+    Nodo* Primero(){
         return inicio;
     }
 
-    Node* PrimeroYEliminar(){
+    /*
+     * @brief Devuelve el primer elemento y lo elimina de la lista
+     * @return Nodo
+     */
+    Nodo* PrimeroYEliminar(){
 
         struct Nodo *aux = inicio;
         inicio = inicio->sig;
@@ -56,10 +74,17 @@ public:
         return aux;
     }
 
+    /*
+     * @brief Devuelve la longitud de la lista
+     * @return int
+     */
     int Longitud(){
         return longitud;
     }
 
+    /*
+     * @brief Destructor de la lista
+     */
     void Vaciar(){
 
         struct Nodo *aux = inicio;
@@ -73,13 +98,18 @@ public:
     }
 };
 
+/*
+ * @brief Clase para el robot
+ */
 class Tambarduine{
 
 private:
+    //metrónomo
     int tempoNum = 1;
     int tempo = 2;
     int metrica = 4;
 
+    // pines del ardiuno
     int buzzPin = 8;
     int ledPin = 13;
     int vertServoPin = 10;
@@ -92,16 +122,21 @@ private:
     bool configurado = false;
     bool metronomo = false;
 
+    //singleton
     static Tambarduine *instance;
 
-
+    //servos
     Servo vertServo, horiServo, pinzaServo, ejePinzaServo;
 
-
+    // pyserial
     String option,value1,value2;
     int valueAction;
     char action;
 
+    /*
+     * @brief Realiza el movimiento de abanico
+     * @param int
+     */
     void Abanico(int direccion){
         MetronomoEspec(0);
         vertServo.write(VERTICAL_NEUTRAL+15*pow(-1,direccion-1));
@@ -112,6 +147,11 @@ private:
             MetronomoEspec(tempo*1000-1000);
         }
     }
+
+    /*
+     * @brief Realiza el movimiento de abanico vertical
+     * @param int
+     */
     void Vertical(int direccion){
         MetronomoEspec(0);
         horiServo.write(HORIZONTAL_NEUTRAL+30*pow(-1,direccion-1));
@@ -120,6 +160,10 @@ private:
         delay(500);
     }
 
+    /*
+     * @brief Golpea el pandero en diferentes lugares
+     * @param int
+     */
     void Percutor(int orden){
         switch (orden){
             case 1:
@@ -198,12 +242,16 @@ private:
                 return;
         }
 
+        // Hace sonar el metrónomo en el momento adecuado
         if (tempo > 1000) {
             MetronomoEspec(tempo*1000-1000);
         }
 
     }
 
+    /*
+     * @brief Golpea el pandero al centro
+     */
     void Golpe(){
         pinzaServo.write(PINZA_CERRADA);                //Cierra la pinza
         ejePinzaServo.write(EJE_PINZA_HORIZONTAL);      //Coloca la pinza en horizontal
@@ -219,6 +267,10 @@ private:
         }
     }
 
+    /*
+     * @brief mueve el pandero a gran velocidad un número de veces
+     * @param int: número de veces que se moverá el pandero
+     */
     void Vibratto(int movimientos){
 
         for (int i = 1; i < movimientos; i++) {
@@ -242,6 +294,9 @@ private:
 
     }
 
+    /*
+     * @brief restablece las posiciones del pandero
+     */
     void Restablecer(){
         vertServo.write(VERTICAL_NEUTRAL);
         horiServo.write(HORIZONTAL_NEUTRAL);
@@ -249,10 +304,18 @@ private:
         ejePinzaServo.write(EJE_PINZA_NEUTRAL);
     }
 
+    /*
+     * @brief establece el tempo del metrónomo
+     * @param int: tempo en segundos
+     */
     void SetTempo(int nuevoTempo){
         tempo = nuevoTempo;
     }
 
+    /*
+     * @brief provoca el sonido del metrónomo con el delay indicado
+     * @param int: delay en milisegundos
+     */
     void MetronomoEspec(int delayTime){
         delay(delayTime);
         if (tempoNum == 1){
@@ -267,10 +330,18 @@ private:
         }
     }
 
+    /*
+     * @brief suena el metrónomo con el tempo indicado
+     */
     void Metronomo(){
         MetronomoEspec(tempo*1000);
     }
 
+    /*
+     * @brief establece la comunicación entre el arduino y el ordenador
+     * @param string, char, int
+     * @return string
+     */
     String getValue(String data, char separator, int index)
     {
         int found = 0;
@@ -288,6 +359,9 @@ private:
     }
 
     public:
+    /*
+     * @brief inicializa el arduino
+     */
     void Setup() {
         Serial.begin(9600);
         pinMode(ledPin,OUTPUT);
@@ -299,7 +373,10 @@ private:
         Percutor(2);
     }
 
-    //singleton Tambarduine
+    /*
+     * @ singleton de la clase
+     * @return instancia de la clase
+     */
     static Tambarduine* getInstance() {
         if (instance == nullptr) {
             instance = new Tambarduine();
@@ -307,6 +384,9 @@ private:
         return instance;
     }
 
+    /*
+     * @brief configura los movimientos en la lista
+     */
     void Config(){
 
         while(!configurado) {
@@ -355,6 +435,9 @@ private:
 
     }
 
+    /*
+     * @brief ejecuta la lista de acciones
+     */
     void Bucle(){
         if (!configurado){
             Config();
