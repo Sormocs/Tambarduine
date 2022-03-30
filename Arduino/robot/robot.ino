@@ -359,7 +359,26 @@ private:
         if (!configurado){
             Config();
         } else if (metronomo){
-
+            while (acciones.Longitud() > 0){
+                accion = acciones.PrimeroYEliminar();
+                switch (accion.tipo){
+                    case "abanico":
+                        Abanico(accion.direccion);
+                        break;
+                    case "vertical":
+                        Vertical(accion.direccion);
+                        break;
+                    case "percutor":
+                        Percutor(accion.direccion);
+                        break;
+                    case "golpe":
+                        Golpe();
+                        break;
+                    case "vibrato":
+                        Vibrato(accion.direccion);
+                        break;
+                }
+            }
         } else {
 
         }
