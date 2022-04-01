@@ -7,7 +7,7 @@ tokens = lex.tokens
 
 precedence = (
     ('right','VAR','FOR','IF','WHILE','ELSE'),
-    ('right','SET','DEF','PRINT','TO','CUANDO','SINO'),
+    ('right','SET','DEF','TO','CUANDO','SINO'),
     ('left','DIFF'),
     ('left','GREATER','SMALLER','SAME','GREATEQ','SMALLEQ','EQUALS'),
     ('left','PLUS','MINUS'),
@@ -29,62 +29,62 @@ def p_statement_for(p):
      '''statement : FOR factor TO factor STEP number LBRACK blockList RBRACK'''
      print("statement for")
      semantic.statement_for("for")
+     p[0] = ["objeto for"] + ["for"]
 
 
 def p_statement_if(p):
     '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK
     | IF LPAR sentence RPAR LBRACK blockList RBRACK ELSE LBRACK blockList RBRACK '''
     print("statement if")
-    semantic.statement_if("if")
+    p[0] = ["objeto if"] + ["if"]
 
 
 def p_statement_EnCaso(p):
     '''statement : ENCASO CUANDO relation ENTONS LBRACK sentence RBRACK SINO LBRACK sentence RBRACK FINENCASO SEMICOLOMN
      | ENCASO factor CUANDO relation ENTONS LBRACK sentence RBRACK SINO LBRACK sentence RBRACK FINENCASO SEMICOLOMN'''
     print("statement 5")
-    semantic.statement_EnCaso("EnCaso")
+    p[0] = ["objeto en caso"] + ["encaso"]
 
 def p_statement_DEF(p):
-    '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK'''
+    '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN'''
     p[0] = [semantic.statement_DEF(p[2].replace(',#var',''),p[6])] + ["def"]
-    #semantic.methods.append(p[0])
+
 
 
 def p_statement_print(p):
-    '''statement : PRINT LPAR sentence RPAR SEMICOLOMN'''
-    print("Print Statement")
-    semantic.print("print")
+    '''statement : id LPAR sentence RPAR SEMICOLOMN'''
+
+    p[0] = [semantic.PrintConsole(p[1],p[3][0])] + ["print"]
+
 
 def p_function(p):
     '''function : function1
     | function2
     | function3
     | function4'''
-    p[0] = p[1] + "#function"
+    p[0] = p[1].replace('#id','') + "#function"
 
 def p_function1(p):
     '''function1 : id LPAR id RPAR SEMICOLOMN'''
-    print ("function")
-    semantic.Funciones(p[1], p[3])
-    p[0] = str(p[1]) + "#" + str(p[3])
+    #semantic.Funciones(p[1], p[3])
+    p[0] = str(p[1]) + "$" + str(p[3])
 
 def p_function2(p):
     '''function2 : id LPAR RPAR SEMICOLOMN'''
-    print ("function2")
-    semantic.Funciones(p[1], "none")
+    #semantic.Funciones(p[1], "none")
     p[0] = str(p[1])
+
 
 def p_function3(p):
     '''function3 : id LPAR number RPAR SEMICOLOMN'''
-    print ("function3")
-    semantic.Funciones(p[1], p[3])
-    p[0] = str(p[1]) + "#" + str(p[3])
+    #semantic.Funciones(p[1], p[3])
+    p[0] = str(p[1]) + "$" + str(p[3])
 
 def p_function4(p):
-    '''function4 : id LPAR id number RPAR SEMICOLOMN'''
+    '''function4 : id LPAR id COMMA number RPAR SEMICOLOMN'''
     print ("function4")
-    semantic.Metronomo(p[1], p[3], p[4])
-    p[0] = str(p[1]) + "#" + str(p[3]) + "#" + str(p[4])
+    #semantic.Metronomo(p[1], p[3], p[5])
+    p[0] = str(p[1]) + "$" + str(p[3]) + "$" + str(p[5])
 
 def p_statementEmpty(p):
     '''statement : empty'''
@@ -108,18 +108,18 @@ def p_operation(p):
     | float
     | operation3'''
     p[0] = str(p[1]).replace('#var','')
-    p[0].replace('#str','')
 
 def p_operation2(p):
     '''operation2 : number symbol
     | var symbol
     | string symbol
-    | float symbol'''
+    | float symbol
+    | operation3 symbol'''
     p[0] = str(p[1])+str(p[2])
 
 def p_operation3(p):
     '''operation3 : parenthesis'''
-    p[0] = "("+str(p[1])+")"
+    p[0] = "(,"+str(p[1])+"),"
 
 def p_opList(p):
     '''opList : operation
@@ -127,11 +127,11 @@ def p_opList(p):
     try:
         p[0] = str(p[1])+str(p[2])
     except(IndexError):
-        p[0] = str(p[1]) + "#operation"
+        p[0] = str(p[1]).replace('#var','') + "#operation"
 
 def p_parenthesis(p):
     '''parenthesis : LPAR opList RPAR'''
-    p[0] = str(p[2])
+    p[0] = str(p[2]).replace('#operation','')
 
 def p_symbol(p):
     '''symbol : MINUS
@@ -177,7 +177,7 @@ def p_var(p):
 
 def p_string(p):
     '''string : QUOT id_list QUOT'''
-    p[0] = str(p[2]) + "#str"
+    p[0] = str(p[2]) + ",#str"
 
 def p_id_list(p):
     '''id_list : id
@@ -197,8 +197,9 @@ def p_sentence(p):
     | factor
     | function'''
     split = p[1].split("#")
-    print(p[1])
-    p[0] = [semantic.sentence(split[0],split[1])] + ["sentence"]
+    line = str(p.lineno)
+    #print("line:" + line)
+    p[0] = [semantic.sentence(split[0],split[1],400)] + ["sentence"]
 
 def p_block(p):
 
@@ -208,7 +209,7 @@ def p_block(p):
 
 def p_blockList(p):
     '''blockList : block
-     | blockList block'''
+     | block blockList'''
     if len(p.slice) > 2:
         p[0] = (p.slice[1],p.slice[2])
     else:
@@ -217,8 +218,6 @@ def p_blockList(p):
     # print(p.__dict__)
     # print(p.slice[1])
 
-    #if p.slice.len() <
-
 
 def p_empty(p):
     '''empty :'''
@@ -226,9 +225,9 @@ def p_empty(p):
 
 def p_error(p):
     try:
-        print ("Error de sintaxis en linea " + str(p.lineno) + " en " + str(p.value) )
+        semantic.PrintText("Error de sintaxis en linea " + str(p.lineno) + " en " + str(p.value))
     except (AttributeError):
-        print ("Missing ;")
+        semantic.PrintText("Falta ;")
 
 parser = yacc.yacc()
 
@@ -236,10 +235,14 @@ def Parsear(cadena,box):
     semantic.methods = []
     semantic.global_vars = []
     lex.analyzer.lineno = 0
-    result = parser.parse(cadena)
-    print(semantic.methods[0].GetName())
-    if (semantic.methods[0].GetName() == "@Principal"):
-        semantic.methods[0].Execute()
-    else:
-        print("Error, principal no detectada")
     semantic.box = box
+    #lex.TokenGen(cadena)
+    result = parser.parse(cadena)
+    detected = False
+    for i in semantic.methods:
+        if i.GetName() == "@Principal":
+            detected = True
+            i.Execute()
+            break
+    if not detected:
+        semantic.PrintText("No se encontro el metodo principal")

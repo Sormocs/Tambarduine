@@ -9,7 +9,7 @@ reserved = ['SET','DEF','IF','FOR','ELSE','ENCASO','ENTONS','TO','STEP','CUANDO'
 
 tokens = reserved +['ID','VAR','NUMBER', 'PLUS', 'MINUS', 'TIMES', 'POWER', 'DIV', 'FULLDIV','QUOT',
                     'MODULE','COMMA', 'SEMICOLOMN','GREATER', 'SMALLER', 'RPAR', 'LPAR', 'LBRACK',
-                    'RBRACK', 'GREATEQ','SMALLEQ','EQUALS','POINT','SAME','DIFF','PRINT']
+                    'RBRACK', 'GREATEQ','SMALLEQ','EQUALS','POINT','SAME','DIFF']
 
 t_POINT = r'[.]'
 t_COMMA = r'[,]'
@@ -44,10 +44,6 @@ def t_ID(t):
     if t.value.upper() in reserved:
         t.value = t.value.upper()
         t.type = t.value
-    return t
-
-def t_PRINT(t):
-    r'println!'
     return t
 
 def t_newline(t):

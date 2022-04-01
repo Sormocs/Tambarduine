@@ -15,7 +15,6 @@ def Main():
     root.mainloop()
 
 if __name__ == "__main__":
-
     # hola = semantic.sentence("4","operation")
     # print(type(hola))
     # if (type(hola) == semantic.sentence):

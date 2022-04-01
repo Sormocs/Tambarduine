@@ -119,6 +119,7 @@ class Window:
         index1 = widget.index("insert")
         index2 = "%s-%sc" % (index1, 1)
         prevIndex = widget.get(index2, index1)
+        prevIndex2 = widget.get("%s-%sc" % (index1, 2), index1)
 
         prevIndentLine = widget.index(index1 + "linestart")
         prevLine = widget.get(prevIndentLine, index1 + "lineend")
@@ -134,7 +135,7 @@ class Window:
             self.lineNumbers.redraw()
             return "break"
 
-        elif prevIndex == "}":
+        elif prevIndex2 == "};":
 
             self.numIdent -= 1
             widget.insert("insert", "\n" + self.ident*self.numIdent)
@@ -282,8 +283,6 @@ class Window:
         #Lexer.TokenGen(code)
         Syntax.Parsear(code,self.outputBox)
 
-
-        pass
 
     def Run(self):
 
