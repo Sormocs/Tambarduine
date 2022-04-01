@@ -62,28 +62,28 @@ def p_function(p):
     | function2
     | function3
     | function4'''
-    p[0] = p[1].replace('#id','') + "#function"
+    string = p[1].replace('#id','') + "#function"
+    p[0] = string.replace('#operation','')
 
 def p_function1(p):
-    '''function1 : id LPAR id RPAR SEMICOLOMN'''
-    #semantic.Funciones(p[1], p[3])
+    '''function1 : ID LPAR ID RPAR SEMICOLOMN'''
+
     p[0] = str(p[1]) + "$" + str(p[3])
 
 def p_function2(p):
-    '''function2 : id LPAR RPAR SEMICOLOMN'''
-    #semantic.Funciones(p[1], "none")
+    '''function2 : ID LPAR RPAR SEMICOLOMN'''
+
     p[0] = str(p[1])
 
 
 def p_function3(p):
-    '''function3 : id LPAR number RPAR SEMICOLOMN'''
-    #semantic.Funciones(p[1], p[3])
+    '''function3 : ID LPAR NUMBER RPAR SEMICOLOMN'''
+
     p[0] = str(p[1]) + "$" + str(p[3])
 
 def p_function4(p):
-    '''function4 : id LPAR id COMMA number RPAR SEMICOLOMN'''
-    print ("function4")
-    #semantic.Metronomo(p[1], p[3], p[5])
+    '''function4 : ID LPAR ID COMMA NUMBER RPAR SEMICOLOMN'''
+    #print ("function4")
     p[0] = str(p[1]) + "$" + str(p[3]) + "$" + str(p[5])
 
 def p_statementEmpty(p):
@@ -132,6 +132,7 @@ def p_opList(p):
 def p_parenthesis(p):
     '''parenthesis : LPAR opList RPAR'''
     p[0] = str(p[2]).replace('#operation','')
+    print("SI CREE QUE ES PARENTESIS WTF")
 
 def p_symbol(p):
     '''symbol : MINUS
@@ -199,7 +200,7 @@ def p_sentence(p):
     split = p[1].split("#")
     line = str(p.lineno)
     #print("line:" + line)
-    p[0] = [semantic.sentence(split[0],split[1],400)] + ["sentence"]
+    p[0] = [semantic.sentence(split[0],split[-1],400)] + ["sentence"]
 
 def p_block(p):
 

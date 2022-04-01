@@ -309,7 +309,7 @@ class sentence():
         self.sentype = sentype
         self.vars = []
         self.line = line
-        print(self.sentype)
+        
 
     def GetValue(self):
         return self.value
@@ -354,10 +354,9 @@ class sentence():
 
         elif self.sentype == "function":
             split = self.value.split("$")
-            print("split: ", split)
+            #print("split: ", split)
 
             if (split[0] == "Golpe"):
-                print("Golpe")
                 Funciones(split[0],"none")
                 return "Exito"
             elif (split[0] == "Percutor" or split[0] == "Abanico" or split[0] == "Vertical" or split[0] == "Vibrato"):
