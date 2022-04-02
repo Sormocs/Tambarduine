@@ -40,7 +40,7 @@ def t_COMMENT(t):
     pass
 
 def t_ID(t):
-    r'[A-Za-z_][a-zA-Z!]*'
+    r'[A-Za-z_][a-zA-Z!0-9_?!$:]*'
     if t.value.upper() in reserved:
         t.value = t.value.upper()
         t.type = t.value

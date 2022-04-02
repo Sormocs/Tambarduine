@@ -176,15 +176,27 @@ class statement_set():
     def Execute(self,vars):
         value = self.sentence.Execute(vars)
         if (value == "Error"):
-            pass
+            return "Error"
         elif (self.sentence.GetType() == "operation"):
             var = Var(self.var, value, "int")
             return var
-        elif (value == "Funcion"): #CAMBIAR POR ALGO QUE DETECTE LAS FUNCIONES
+        elif (self.sentence.GetType() == "function"): #CAMBIAR POR ALGO QUE DETECTE LAS FUNCIONES
             return "Error"
-        elif (value == "str"):
+        elif (self.sentence.GetType() == "str"):
             var = Var(self.var, value, "str")
             return var
+        elif (value == "true" or value == "false"):
+            var = Var(self.var, value, "bool")
+            return var
+        else:
+            return "Error"
+
+class statement_while():
+
+    def __init__(self,condition,block):
+        self.type = "while"
+        self.condition = condition
+        self.block = block
 
 class statement_for():
     def __init__(self, name):
@@ -199,15 +211,149 @@ class statement_for():
 
 
 class statement_if():
-    def __init__(self, name):
-        self.name = name
-        self.type = "state"
+
+    def __init__(self, relation, block, else_block, isElse):
+        self.type = "if"
+        self.relation = relation
+        self.block = block
+        self.else_block = else_block
+        self.isElse = isElse
+        self.location = None
+        self.vars = []
 
     def GetType(self):
         return self.type
 
-    def Execute(self):
-        pass
+    def Execute(self,vars,location):
+        self.location = location
+        self.vars = vars
+        if self.relation.GetType() == "relation":
+
+            if not self.isElse:
+                #CODIGO SIN ELSE
+                if self.relation.Execute():
+                    temp = self.block
+                    temp2 = None
+                    while (temp != None):
+                        if (type(temp) != YaccSymbol):
+                            if (len(temp) > 1):
+                                temp2 = temp[0].value
+
+                            else:
+                                temp2 = temp[0].value
+                        else:
+                            temp2 = temp.value
+                        # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+                        if (temp2.GetType() == "set"):
+
+                            new_var = temp2.GetAction().Execute(self.vars)
+                            if new_var != "Error":
+
+                                if (self.location.GetName() == "@Principal"):
+                                    global_vars.append(new_var)
+                                else:
+                                    self.location.GetVars().append(new_var)
+
+                            else:
+                                PrintText("Error en la ejecucion de la funcion " + self.location.GetName() + " en un set")
+                                break
+
+                        elif (temp2.GetType() == "sentence"):
+                            if temp2.GetAction().GetType() == "function":
+                                res = temp2.GetAction().Execute(self.location.GetVars(), self.location)
+                                if (res == "Error"):
+                                    PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                                    break
+
+                        elif (temp2.GetType() == "statement_if"):
+                            res = temp2.GetAction().Execute(self.location.GetVars(), self.location)
+                            if (res == "Error"):
+                                PrintText("Error en statement if en rutina" + self.location.GetName())
+                                break
+
+                        elif (temp2.GetType() == "statement_for"):
+                            pass
+
+                        elif (temp2.GetType() == "encaso"):
+                            pass
+
+                        elif (temp2.GetType() == "print"):
+                            temp2.GetAction().Execute(self.vars)
+
+                        elif (temp2.GetType() == "def"):
+                            return "Error"
+
+                        if (type(temp) == YaccSymbol):  # al final
+                            temp = None
+                        else:
+                            temp = temp[1].value
+
+                else:
+                    pass
+            else:
+                #CODIGO CON ELSE PRESENTE
+                if self.relation.Execute():
+                    temp = self.block
+                else:
+                    temp = self.else_block
+                temp2 = None
+                while (temp != None):
+                    if (type(temp) != YaccSymbol):
+                        if (len(temp) > 1):
+                            temp2 = temp[0].value
+
+                        else:
+                            temp2 = temp[0].value
+                    else:
+                        temp2 = temp.value
+                    # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+                    if (temp2.GetType() == "set"):
+
+                        new_var = temp2.GetAction().Execute(self.vars)
+                        if new_var != "Error":
+
+                            if (self.name == "@Principal"):
+                                global_vars.append(new_var)
+                            else:
+                                self.vars.append(new_var)
+
+                        else:
+                            PrintText("Error en la ejecucion de la funcion " + self.name)
+                            break
+
+                    elif (temp2.GetType() == "sentence"):
+                        if temp2.GetAction().GetType() == "function":
+                            res = temp2.GetAction().Execute(self.vars)
+                            if (res == "Error"):
+                                PrintText(
+                                    "Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                                break
+
+                    elif (temp2.GetType() == "statement_if"):
+                        res = temp2.GetAction().Execute(self.vars, self)
+                        if (res == "Error"):
+                            PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                            break
+
+                    elif (temp2.GetType() == "statement_for"):
+                        pass
+
+                    elif (temp2.GetType() == "encaso"):
+                        pass
+
+                    elif (temp2.GetType() == "print"):
+                        temp2.GetAction().Execute(self.vars)
+
+                    elif (temp2.GetType() == "def"):
+                        pass
+
+                    if (type(temp) == YaccSymbol):  # al final
+                        temp = None
+                    else:
+                        temp = temp[1].value
+
+        else:
+            return "Error"
 
 
 class statement_EnCaso():
@@ -238,6 +384,9 @@ class statement_DEF():
     def GetBlock(self):
         return self.block
 
+    def GetVars(self):
+        return self.vars
+
     def Execute(self):
         temp = self.block
         temp2 = None
@@ -254,10 +403,16 @@ class statement_DEF():
             if (temp2.GetType() == "set"):
 
                 new_var = temp2.GetAction().Execute(self.vars)
-                if (self.name == "@Principal"):
-                    global_vars.append(new_var)
+                if new_var != "Error":
+
+                    if (self.name == "@Principal"):
+                        global_vars.append(new_var)
+                    else:
+                        self.vars.append(new_var)
+
                 else:
-                    self.vars.append(new_var)
+                    PrintText("Error en set de la funcion principal " + self.name)
+                    break
 
             elif (temp2.GetType() == "sentence"):
                 if temp2.GetAction().GetType() == "function":
@@ -266,9 +421,24 @@ class statement_DEF():
                         PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
                         break
 
+            elif (temp2.GetType() == "statement_if"):
+                res = temp2.GetAction().Execute(self.vars,self)
+                if (res == "Error"):
+                    PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                    break
+
+            elif (temp2.GetType() == "statement_for"):
+                pass
+
+            elif (temp2.GetType() == "encaso"):
+                pass
 
             elif (temp2.GetType() == "print"):
-                temp2.GetAction().Execute(self.vars)
+                res = temp2.GetAction().Execute(self.vars)
+                if res == "Error":
+                    PrintText("Error en print en " + str(temp2.GetAction().GetLine()))
+                    break
+
             elif (temp2.GetType() == "def"):
                 pass
 
@@ -286,19 +456,25 @@ class PrintConsole():
         self.text = ""
         self.vars = []
         self.type = "print"
+        self.id = id.replace("#id","")
+        print(self.sentence.GetValue())
 
     def Execute(self,vars):
-        self.vars = vars
-        if(self.sentence.GetType() != "function"):
-            self.text = str(self.sentence.Execute(self.vars))
-            self.Insert()
-            return ("Exito")
+        if self.id == "println!":
+
+            self.vars = vars
+            if(self.sentence.GetType() != "function"):
+                self.text = str(self.sentence.Execute(self.vars))
+                self.Insert()
+                return "Exito"
+            else:
+                return "Error"
         else:
-            return ("Error")
+            return "Error"
 
     def Insert(self):
         self.outputBox.configure(state="normal")
-        self.outputBox.insert("end", self.text + "\n")
+        self.outputBox.insert("end", self.text.replace("+"," ") + "\n")
         self.outputBox.configure(state="disabled")
 
 
@@ -309,7 +485,11 @@ class sentence():
         self.sentype = sentype
         self.vars = []
         self.line = line
-        
+        if self.sentype == "true":
+            self.value = "true"
+        elif self.sentype == "false":
+            self.value = "false"
+
 
     def GetValue(self):
         return self.value
@@ -322,35 +502,34 @@ class sentence():
 
     def Execute(self,vars):
         self.vars = vars
-        #print(global_vars)
         if (self.sentype == "str"):
-            new_op = self.SwitchVars(self.value)
-            new_op.split(",")
+            new_str = self.SwitchVars(self.value)
+            str_list = new_str.split(",")
             res = ""
-            for i in new_op:
-                res += str(i)
-            print("FinalRes = " + str(res))
+            for i in str_list:
+                if i == "+":
+                    pass
+                elif i not in "/*-%":
+                    res += str(i)
+                else:
+                    PrintText("Error de operacion con string, solo soporta +")
+                    return "Error"
+            print("FinalString = " + str(res))
             return res
+        elif (self.sentype == "true"):
+            return "true"
+        elif (self.sentype == "false"):
+            return "false"
         elif self.sentype == "operation":
 
-            type = self.VerifyOp(self.value)
-            #print(type) 40.42
-            if (type == "num_var"):
-
-                new_op = self.SwitchVars(self.value)
-                #print("new_op: "+new_op)
-                res = self.FormList(new_op)
-                return res
-            elif (type == "string"):
-                new_op = self.SwitchVars(self.value)
-                new_op.split(",")
-                res = ""
-                for i in new_op:
-                    res += str(i)
-                print("FinalRes = " + str(res))
-                return res
+            new_op = self.SwitchVars(self.value)
+            if (new_op == "Error"):
+                return "Error"
             else:
-                pass
+                if self.sentype == "operation":
+                    res = self.FormList(new_op)
+                    return res
+
 
         elif self.sentype == "function":
             split = self.value.split("$")
@@ -405,30 +584,38 @@ class sentence():
 
 
     def SwitchVars(self,op):
-
         new_op = op.replace("(","")
         new_op = new_op.replace(")","")
-        op_split = op.split(",")[0:-1]
-
+        if new_op[-1] == ",":
+            op_split = op.split(",")[0:-1]
+        else:
+            op_split = op.split(",")
         for i in op_split:
-            if self.vars != []:
-                for j in self.vars:
-                    name = j.GetName()
-                    if i == name and j.GetType() == "int" or j.GetType() == "str":
-                        op = op.replace(name,str(j.GetValue()))
-            if global_vars != []:
-                for j in global_vars:
-                    name = j.GetName()
-                    if i == name and j.GetType() == "int" or j.GetType() == "str":
-                        op = op.replace(name,str(j.GetValue()))
-            for j in global_vars:
-                if i == j.GetName() and j.GetType() == "int" or j.GetType() == "str":
-                    op = op.replace(j.GetName(), str(j.GetValue()).replace('"', ''))
+            if i[0]=="@":
+                val = self.ReplaceVar(i)
+                if val != "Error":
+                    op = op.replace(i,str(val))
+                else:
+                    return "Error"
+            else:
+                pass
         return op
 
+    def ReplaceVar(self,name):
+        for i in self.vars:
+            if i.GetName() == name:
+                return i.GetValue()
+            if i.GetType() == "str":
+                self.sentype = "str"
+        for i in global_vars:
+            if i.GetName() == name:
+                return i.GetValue()
+            if i.GetType() == "str":
+                self.sentype = "str"
+        PrintText("Error: Variable no encontrada")
+        return "Error"
 
     def CheckPar(self,opstr):
-
         started = False
         another = 0
         parlist = []
@@ -468,8 +655,9 @@ class sentence():
 
         if (checked_op[0] == ","):
             checked_op = checked_op[1:-1]
-        else:
+        elif (checked_op[-1] == ","):
             checked_op = checked_op[0:-1]
+
 
         result = Solve(checked_op.split(","))
 
@@ -478,20 +666,20 @@ class sentence():
     def VerifyOp(self,op):
         string = False
         num_var = False
-
+        print("op in verifyop: "+op)
         op_split = op.split(",")[0:-1]
+        if len(op_split) == 1:
+            num_var = True
         for i in op_split:
-            if ",#str in " in i:
-                string = True
-                self.value = self.value.replace(",#str","")
-                self.value = self.value.replace('"','')
-            elif i == "(" or i in sec_symbols or i in prim_symbols or i == ")":
+
+            if i == "(" or i in sec_symbols or i in prim_symbols or i == ")":
                 pass
             else:
                 try:
                     float(i)
                     num_var = True
                 except(ValueError):
+                    print(i[0])
                     if (i[0] == "@"):
                         num_var = True
                     else:

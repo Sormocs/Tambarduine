@@ -26,17 +26,25 @@ def p_statement_set(p):
 #
 #
 def p_statement_for(p):
-     '''statement : FOR factor TO factor STEP number LBRACK blockList RBRACK'''
+     '''statement : FOR sentence TO sentence STEP number LBRACK blockList RBRACK'''
      print("statement for")
      semantic.statement_for("for")
-     p[0] = ["objeto for"] + ["for"]
+     p[0] = ["objeto for"] + ["statement_for"]
 
 
 def p_statement_if(p):
-    '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK
-    | IF LPAR sentence RPAR LBRACK blockList RBRACK ELSE LBRACK blockList RBRACK '''
+    '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK SEMICOLOMN'''
     print("statement if")
-    p[0] = ["objeto if"] + ["if"]
+    p[0] = [semantic.statement_if(p[3],p[6],"none",False)] + ["statement_if"]
+
+def p_statement_if2(p):
+    '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK ELSE LBRACK blockList RBRACK SEMICOLOMN'''
+    print("statement if")
+    p[0] = [semantic.statement_if(p[3],p[6],p[10],True)] + ["statement_if"]
+
+def p_statement_while(p):
+    '''statement : WHILE LPAR sentence RPAR LBRACK blockList RBRACK SEMICOLOMN'''
+    p[0] = [semantic.statement_while()] + ["while"]
 
 
 def p_statement_EnCaso(p):
@@ -47,12 +55,14 @@ def p_statement_EnCaso(p):
 
 def p_statement_DEF(p):
     '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN'''
-    p[0] = [semantic.statement_DEF(p[2].replace(',#var',''),p[6])] + ["def"]
+    p[0] = [semantic.statement_DEF(p[2].replace('#var',''),p[6])] + ["def"]
+
 
 
 
 def p_statement_print(p):
-    '''statement : id LPAR sentence RPAR SEMICOLOMN'''
+    '''statement : ID LPAR sentence RPAR SEMICOLOMN
+    | id LPAR  opList RPAR SEMICOLOMN'''
 
     p[0] = [semantic.PrintConsole(p[1],p[3][0])] + ["print"]
 
@@ -98,7 +108,8 @@ def p_relation1(p):
     | factor DIFF factor
     | factor EQUALS factor'''
     print("Comparacion")
-    p[0] = str(p[1]).replace('#var','') + str(p[2]) + str(p[3].replace('#var',''))+"#relation"
+    string = str(p[1]).replace('#var','') + str(p[2]) + str(p[3].replace('#var',''))+"#relation"
+    p[0] = string
 
 def p_operation(p):
     '''operation : operation2
@@ -132,7 +143,6 @@ def p_opList(p):
 def p_parenthesis(p):
     '''parenthesis : LPAR opList RPAR'''
     p[0] = str(p[2]).replace('#operation','')
-    print("SI CREE QUE ES PARENTESIS WTF")
 
 def p_symbol(p):
     '''symbol : MINUS
@@ -170,23 +180,23 @@ def p_true(p):
 
 def p_false(p):
     '''false : FALSE'''
-    p[0] = "#false"
+    p[0] = str(p[0])+ "#false"
 
 def p_var(p):
     '''var : VAR'''
-    p[0] = str(p[1]) + ",#var"
+    p[0] = str(p[1]) + "#var"
 
 def p_string(p):
     '''string : QUOT id_list QUOT'''
-    p[0] = str(p[2]) + ",#str"
+    p[0] = str(p[2])
 
 def p_id_list(p):
     '''id_list : id
     | id id_list'''
     try:
-        p[0] = p[1].replace('#id',',') + p[2].replace('#id',',')
+        p[0] = p[1].replace('#id',',') + " " +p[2].replace('#id',',')
     except (IndexError):
-        p[0] = p[1].replace('#id','')
+        p[0] = p[1].replace('#id','') + "#str"
 
 def p_id(p):
     '''id : ID'''
@@ -194,16 +204,21 @@ def p_id(p):
 
 def p_sentence(p):
     '''sentence : relation
-    | opList
     | factor
-    | function'''
+    | function
+    | type
+    | opList'''
     split = p[1].split("#")
     line = str(p.lineno)
-    #print("line:" + line)
-    p[0] = [semantic.sentence(split[0],split[-1],400)] + ["sentence"]
+    print(split)
+    if "#str" in p[1]:
+        string = p[1].replace("#str","")
+        split = string.split("#")
+        p[0] = [semantic.sentence(split[0], "str", 400)] + ["sentence"]
+    else:
+        p[0] = [semantic.sentence(split[0],split[-1],400)] + ["sentence"]
 
 def p_block(p):
-
     '''block : statement
     | sentence'''
     p[0] = semantic.Block(p[1][0],p[1][1])
@@ -219,6 +234,9 @@ def p_blockList(p):
     # print(p.__dict__)
     # print(p.slice[1])
 
+def p_type(p):
+    '''type : ID LPAR VAR RPAR'''
+    p[0] = str(p[1])+str(p[3]) + "#type"
 
 def p_empty(p):
     '''empty :'''
@@ -240,10 +258,12 @@ def Parsear(cadena,box):
     #lex.TokenGen(cadena)
     result = parser.parse(cadena)
     detected = False
-    for i in semantic.methods:
-        if i.GetName() == "@Principal":
-            detected = True
-            i.Execute()
-            break
-    if not detected:
-        semantic.PrintText("No se encontro el metodo principal")
+
+    if semantic.methods != []:
+        for i in semantic.methods:
+            if i.GetName() == "@Principal":
+                detected = True
+                i.Execute()
+                break
+        if not detected:
+            semantic.PrintText("No se encontro el metodo principal")
