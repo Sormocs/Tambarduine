@@ -55,17 +55,18 @@ def Solve(op):
 
     res1 = []
     symbs = []
+    print(new_op)
     for i in range(0, len(new_op)):
         if i + 1 != len(new_op):
             if new_op[i + 1] in prim_symbols:
                 if new_op[i + 1] == "*":
-                    res1 += [str(float(new_op[i]) * float(new_op[i + 2]))]
+                    res1 += [float(new_op[i]) * float(new_op[i + 2])]
                 elif new_op[i + 1] == "%":
-                    res1 += [float(int(new_op[i]) % float(new_op[i + 2]))]
+                    res1 += [float(new_op[i]) % float(new_op[i + 2])]
                 elif new_op[i + 1] == "//":
-                    res1 += [float(int(new_op[i]) // float(new_op[i + 2]))]
+                    res1 += [float(new_op[i]) // float(new_op[i + 2])]
                 elif new_op[i + 1] == "/":
-                    res1 += [float(int(new_op[i]) / float(new_op[i + 2]))]
+                    res1 += [float(new_op[i]) / float(new_op[i + 2])]
                 skip = i + 2
             elif new_op[i] in prim_symbols or i == skip:
                 pass
@@ -457,7 +458,6 @@ class PrintConsole():
         self.vars = []
         self.type = "print"
         self.id = id.replace("#id","")
-        print(self.sentence.GetValue())
 
     def Execute(self,vars):
         if self.id == "println!":
@@ -489,6 +489,8 @@ class sentence():
             self.value = "true"
         elif self.sentype == "false":
             self.value = "false"
+        print(self.sentype)
+        print(self.value)
 
 
     def GetValue(self):
@@ -514,12 +516,34 @@ class sentence():
                 else:
                     PrintText("Error de operacion con string, solo soporta +")
                     return "Error"
-            print("FinalString = " + str(res))
+            #print("FinalString = " + str(res))
             return res
         elif (self.sentype == "true"):
             return "true"
         elif (self.sentype == "false"):
             return "false"
+        elif (self.sentype == "relation"):
+            pass
+        elif (self.sentype == "type"):
+            print(self.value)
+            split_val = self.value.split("&")
+            if (split_val[0] == "type"):
+                print(split_val[1])
+                for i in self.vars:
+                    if i.GetName() == split_val[1]:
+                        PrintText("Tipo de variable " + split_val[1] + " = " + i.GetType())
+                        return "Exito"
+                for i in global_vars:
+                    if i.GetName() == split_val[1]:
+                        PrintText("Tipo de variable " + split_val[1] + " = " + i.GetType())
+                        return "Exito"
+                    if i.GetType() == "str":
+                        self.sentype = "str"
+                PrintText("Error: Variable no encontrada")
+                return "Error"
+            else:
+                PrintText("Error: Funcion introducida no existe")
+                return "Error"
         elif self.sentype == "operation":
 
             new_op = self.SwitchVars(self.value)
@@ -666,7 +690,7 @@ class sentence():
     def VerifyOp(self,op):
         string = False
         num_var = False
-        print("op in verifyop: "+op)
+        #print("op in verifyop: "+op)
         op_split = op.split(",")[0:-1]
         if len(op_split) == 1:
             num_var = True
@@ -679,7 +703,7 @@ class sentence():
                     float(i)
                     num_var = True
                 except(ValueError):
-                    print(i[0])
+                    #print(i[0])
                     if (i[0] == "@"):
                         num_var = True
                     else:

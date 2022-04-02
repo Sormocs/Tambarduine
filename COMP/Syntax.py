@@ -236,7 +236,8 @@ def p_blockList(p):
 
 def p_type(p):
     '''type : ID LPAR VAR RPAR'''
-    p[0] = str(p[1])+str(p[3]) + "#type"
+    #print("Entro en type")
+    p[0] = str(p[1])+"&"+str(p[3]) + "#type"
 
 def p_empty(p):
     '''empty :'''
