@@ -123,7 +123,3 @@ class ArduinoSerial:
         self.canSend = True
         self.tempo = tempo
         self.send("M#" + str(tempo)) #Tempo#0
-
-
-
-

@@ -18,8 +18,8 @@
  * @brief Estructura de los nodos de la lista
  */
 struct Nodo {
-    string movimiento;
-    int num;
+    char movimiento;
+    int direccion;
     struct Nodo *sig;
 };
 
@@ -35,11 +35,11 @@ public:
      * @brief Constructor de la lista
      * @param string, int
      */
-    void Agregar(string movimiento, int num){
+    void Agregar(char movimiento, int num){
 
         struct Nodo *nuevo = new Nodo;
         nuevo->movimiento = movimiento;
-        nuevo->num = num;
+        nuevo->direccion = num;
         nuevo->sig = NULL;
 
         if(inicio == NULL){
@@ -121,6 +121,7 @@ private:
     Acciones acciones;
     bool configurado = false;
     bool metronomo = false;
+    struct Nodo *accion = new Nodo;
 
     //singleton
     static Tambarduine *instance;
@@ -404,26 +405,26 @@ private:
                 case 'A':
                     //Llama a abanico con el parámetro valueAction como dirección
                     //Abanico(valueAction);
-                    acciones.Agregar("abanico", valueAction);
+                    acciones.Agregar('A', valueAction);
                 case 'V':
                     //Llama a vertical con el parámetro valueAction como dirección
                     //Vertical(valueAction);
-                    acciones.Agregar("vertical", valueAction);
+                    acciones.Agregar('V', valueAction);
                     break;
                 case 'P':
                     //Llama a Percitor con el parámetro valueAction
                     //Percutor(valueAction);
-                    acciones.Agregar("percutor", valueAction);
+                    acciones.Agregar('P', valueAction);
                     break;
                 case 'G':
                     //Llamada a Golpe
                     //Golpe();
-                    acciones.Agregar("golpe", 0);
+                    acciones.Agregar('G', 0);
                     break;
                 case 'T':
                     //Llamada a Vibrato con el parametro valueAction como numero de vibraciones
                     //Vibratto(valueAction);
-                    acciones.Agregar("vibrato", valueAction);
+                    acciones.Agregar('T', valueAction);
                     break;
                 case 'M':
                     //Llamada a Metronomo para actualizar el numero con valueAction
@@ -440,25 +441,32 @@ private:
      */
     void Bucle(){
         if (!configurado){
-            Config();
+            Restablecer();
+            //Config();
+            //Vibratto(5);
+            Abanico(1);
+            Vertical(1);
+            //Golpe();
+            //Percutor(1);
+            
         } else if (metronomo){
             while (acciones.Longitud() > 0){
                 accion = acciones.PrimeroYEliminar();
-                switch (accion.tipo){
-                    case "abanico":
-                        Abanico(accion.direccion);
+                switch (accion->movimiento){
+                    case 'A':
+                        Abanico(accion->direccion);
                         break;
-                    case "vertical":
-                        Vertical(accion.direccion);
+                    case 'V':
+                        Vertical(accion->direccion);
                         break;
-                    case "percutor":
-                        Percutor(accion.direccion);
+                    case 'P':
+                        Percutor(accion->direccion);
                         break;
-                    case "golpe":
+                    case 'G':
                         Golpe();
                         break;
-                    case "vibrato":
-                        Vibrato(accion.direccion);
+                    case 'T':
+                        Vibratto(accion->direccion);
                         break;
                 }
             }
