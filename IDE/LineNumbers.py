@@ -3,21 +3,34 @@ from tkinter import *
 import platform
 
 class TextLineNumbers(Canvas):
-    '''
-        Canvas for Linenumbers
-    '''
+
+    """
+    A canvas widget that displays the line numbers for a text widget.
+    """
     def __init__(self, *args, **kwargs):
         Canvas.__init__(self, *args, **kwargs)
+
         self.textwidget = None
         self.fontSize = 12
 
 
 
     def attach(self, text_widget):
+
+        """
+        Attach the line number canvas to the text widget
+        :param text_widget: text
+        :return: None
+        """
+
         self.textwidget = text_widget
 
     def redraw(self, *args):
-        '''redraw line numbers'''
+        """
+        Redraw the line numbers
+        :param args:
+        :return: None
+        """
         self.delete("all")
 
         i = self.textwidget.index("@0,0")
