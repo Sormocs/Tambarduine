@@ -444,8 +444,8 @@ private:
             Restablecer();
             //Config();
             //Vibratto(5);
-            Abanico(1);
-            Vertical(1);
+            //Abanico(1);
+            //Vertical(1);
             //Golpe();
             //Percutor(1);
             
