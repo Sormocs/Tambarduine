@@ -1,6 +1,7 @@
 from tkinter import *
 from IDE import Window
-import customtkinter
+import COMP.SemanticAn as semantic
+#import customtkinter
 
 def Main():
 
@@ -13,10 +14,11 @@ def Main():
     root.bind("<Key>", lambda event: win.tagHighlight())
     root.mainloop()
 
-
-
 if __name__ == "__main__":
-
+    # hola = semantic.sentence("4","operation")
+    # print(type(hola))
+    # if (type(hola) == semantic.sentence):
+    #     print("Sirve")
     Main()
 
 

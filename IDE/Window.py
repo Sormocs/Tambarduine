@@ -1,6 +1,7 @@
 import tkinter.filedialog
 from tkinter import *
 from IDE import LineNumbers
+from COMP import Syntax
 from COMP import Lexer
 import json
 
@@ -63,7 +64,7 @@ class Window:
         self.textBox.tag_configure("purple", foreground="purple")
 
         self.tags = ["orange", "blue", "red", "green", "purple"]
-        self.wordList = [["for","while","if","else","to"],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to","SET"],["EnCaso","Step","type"]]
+        self.wordList = [["WHILE","FOR","for","while","if","else","to"],["Exec","Def"],["Cuando","EnTons"],["Fin-EnCaso","to","SET"],["EnCaso","Step","type"]]
         self.letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p","q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
         self.textBox.bind("<Return>", lambda event: self.Indent(event.widget))
@@ -158,6 +159,7 @@ class Window:
         index1 = widget.index("insert")
         index2 = "%s-%sc" % (index1, 1)
         prevIndex = widget.get(index2, index1)
+        prevIndex2 = widget.get("%s-%sc" % (index1, 2), index1)
 
         prevIndentLine = widget.index(index1 + "linestart")
         prevLine = widget.get(prevIndentLine, index1 + "lineend")
@@ -173,7 +175,7 @@ class Window:
             self.lineNumbers.redraw()
             return "break"
 
-        elif prevIndex == "}":
+        elif prevIndex2 == "};":
 
             self.numIdent -= 1
             widget.insert("insert", "\n" + self.ident*self.numIdent)
@@ -386,10 +388,9 @@ class Window:
         """
 
         code = self.GetText()
-        Lexer.TokenGen(code)
+        #Lexer.TokenGen(code)
+        Syntax.Parsear(code,self.outputBox)
 
-
-        pass
 
     def Run(self):
 
