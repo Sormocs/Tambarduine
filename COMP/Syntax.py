@@ -26,26 +26,20 @@ def p_statement_set(p):
 #
 #
 def p_statement_for(p):
-     '''statement : FOR sentence TO sentence STEP number LBRACK blockList RBRACK'''
+     '''statement : FOR VAR TO NUMBER STEP NUMBER LBRACK blockList RBRACK SEMICOLOMN'''
      print("statement for")
-     semantic.statement_for("for")
-     p[0] = ["objeto for"] + ["statement_for"]
+     p[0] = [semantic.statement_for(p[2],p[4],p[6]),p[8]] + ["statement_for"]
 
 
 def p_statement_if(p):
     '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK SEMICOLOMN'''
     print("statement if")
-    p[0] = [semantic.statement_if(p[3],p[6],"none",False)] + ["statement_if"]
+    p[0] = [semantic.statement_if(p[3][0],p[6],"none",False)] + ["statement_if"]
 
 def p_statement_if2(p):
     '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK ELSE LBRACK blockList RBRACK SEMICOLOMN'''
     print("statement if")
-    p[0] = [semantic.statement_if(p[3],p[6],p[10],True)] + ["statement_if"]
-
-def p_statement_while(p):
-    '''statement : WHILE LPAR sentence RPAR LBRACK blockList RBRACK SEMICOLOMN'''
-    p[0] = [semantic.statement_while()] + ["while"]
-
+    p[0] = [semantic.statement_if(p[3][0],p[6],p[10],True)] + ["statement_if"]
 
 def p_statement_EnCaso(p):
     '''statement : ENCASO CUANDO relation ENTONS LBRACK sentence RBRACK SINO LBRACK sentence RBRACK FINENCASO SEMICOLOMN
@@ -54,17 +48,18 @@ def p_statement_EnCaso(p):
     p[0] = ["objeto en caso"] + ["encaso"]
 
 def p_statement_DEF(p):
-    '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN'''
+    '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN '''
     p[0] = [semantic.statement_DEF(p[2].replace('#var',''),p[6])] + ["def"]
 
 
-
-
 def p_statement_print(p):
-    '''statement : ID LPAR sentence RPAR SEMICOLOMN
-    | id LPAR  opList RPAR SEMICOLOMN'''
+    '''statement : ID LPAR sentence RPAR SEMICOLOMN'''
+    p[0] = [semantic.PrintConsole(p[1],p[3][0],"sentence")] + ["print"]
 
-    p[0] = [semantic.PrintConsole(p[1],p[3][0])] + ["print"]
+def p_statement_print2(p):
+    '''statement : ID LPAR VAR RPAR SEMICOLOMN'''
+    print("statement print2")
+    p[0] = [semantic.PrintConsole(p[1],p[3][0],"var")] + ["print"]
 
 
 def p_function(p):
@@ -100,16 +95,70 @@ def p_statementEmpty(p):
     '''statement : empty'''
 
 
-def p_relation1(p):
-    '''relation : factor GREATER factor
-    | factor SMALLER factor
-    | factor GREATEQ factor
-    | factor SMALLEQ factor
-    | factor DIFF factor
-    | factor EQUALS factor'''
-    print("Comparacion")
-    string = str(p[1]).replace('#var','') + str(p[2]) + str(p[3].replace('#var',''))+"#relation"
+def p_relation(p):
+    '''relation : relation1
+    | relation2
+    | relation3
+    | relation4
+    | relation5
+    | relation6
+    | relation7
+    | relation8'''
+
+    string = str(p[1]) +"#relation"
     p[0] = string
+
+def p_relation1(p):
+    '''relation1 : NUMBER compare NUMBER'''
+    string = str(p[1]) +"$"+ str(p[2]) +"$"+ str(p[3])+"$"+ "NUM_NUM"
+    p[0] = string
+
+def p_relation2(p):
+    '''relation2 : NUMBER compare VAR'''
+    string = str(p[1]) +"$"+ str(p[2]) +"$"+ str(p[3])+"$"+ "NUM_VAR"
+    p[0] = string
+
+def p_relation3(p):
+    '''relation3 : VAR compare VAR'''
+    string = str(p[1]) +"$"+ str(p[2]) +"$"+ str(p[3])+"$"+ "VAR_VAR"
+    p[0] = string
+
+def p_relation4(p):
+    '''relation4 : VAR compare NUMBER'''
+    string = str(p[1]) +"$"+ str(p[2]) +"$"+ str(p[3])+"$"+ "VAR_NUM"
+    p[0] = string
+
+def p_relation5(p):
+    '''relation5 : VAR compare string'''
+    string = str(p[1]) +"$"+ str(p[2]) +"$"+ str(p[3])+"$"+ "VAR_STR"
+    p[0] = string
+
+def p_relation6(p):
+    '''relation6 : string compare string'''
+    string = str(p[1]) + "$" + str(p[2]) + "$" + str(p[3]) + "$" + "STR_STR"
+    p[0] = string
+
+def p_relation7(p):
+    '''relation7 : TRUE compare VAR
+    | FALSE compare VAR'''
+    string = str(p[1]) + "$" + str(p[2]) + "$" + str(p[3]) + "$" + "BOOL_VAR"
+    p[0] = string
+
+def p_relation8(p):
+    '''relation8 : VAR compare TRUE
+    | VAR compare FALSE'''
+    string = str(p[1]) + "$" + str(p[2]) + "$" + str(p[3]) + "$" + "VAR_BOOL"
+    p[0] = string
+
+
+def p_compare(p):
+    '''compare : SMALLER
+    | GREATER
+    | SMALLEQ
+    | GREATEQ
+    | EQUALS
+    | DIFF'''
+    p[0] = str(p[1])
 
 def p_operation(p):
     '''operation : operation2
@@ -210,13 +259,14 @@ def p_sentence(p):
     | opList'''
     split = p[1].split("#")
     line = str(p.lineno)
-    print(split)
+    #print(split)
+    #print(p.__dict__)
     if "#str" in p[1]:
         string = p[1].replace("#str","")
         split = string.split("#")
-        p[0] = [semantic.sentence(split[0], "str", 400)] + ["sentence"]
+        p[0] = [semantic.sentence(split[0], "str", p.stack[-1].lineno)] + ["sentence"]
     else:
-        p[0] = [semantic.sentence(split[0],split[-1],400)] + ["sentence"]
+        p[0] = [semantic.sentence(split[0],split[-1],p.stack[-1].lineno)] + ["sentence"]
 
 def p_block(p):
     '''block : statement
@@ -235,7 +285,7 @@ def p_blockList(p):
     # print(p.slice[1])
 
 def p_type(p):
-    '''type : ID LPAR VAR RPAR'''
+    '''type : ID LPAR VAR RPAR '''
     #print("Entro en type")
     p[0] = str(p[1])+"&"+str(p[3]) + "#type"
 
@@ -245,8 +295,10 @@ def p_empty(p):
 
 def p_error(p):
     try:
-        semantic.PrintText("Error de sintaxis en linea " + str(p.lineno) + " en " + str(p.value))
+        print("Error p",p)
+        semantic.PrintText("Error de sintaxis en linea " + str(p.lineno + 1) + " en " + str(p.value))
     except (AttributeError):
+        print("Error p", p)
         semantic.PrintText("Falta ;")
 
 parser = yacc.yacc()
@@ -265,6 +317,7 @@ def Parsear(cadena,box):
             if i.GetName() == "@Principal":
                 detected = True
                 i.Execute()
+                #INSTRUCCION semantic.FUNCION()
                 break
         if not detected:
             semantic.PrintText("No se encontro el metodo principal")

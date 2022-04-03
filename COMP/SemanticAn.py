@@ -11,6 +11,7 @@ metronome = False
 
 box = None
 
+
 def FinalOp(op):
     i = 0
     res = 0
@@ -55,7 +56,6 @@ def Solve(op):
 
     res1 = []
     symbs = []
-    print(new_op)
     for i in range(0, len(new_op)):
         if i + 1 != len(new_op):
             if new_op[i + 1] in prim_symbols:
@@ -99,48 +99,45 @@ def FormOp(nums, symbs):
     return res
 
 
-def Funciones(name,param):
-
+def Funciones(name, param):
     if name == "Percutor":
         if param == "A":
-            print ("Funcion percutor Arriba")
+            print("Funcion percutor Arriba")
         elif param == "B":
-            print ("Funcion percutor Abajo")
+            print("Funcion percutor Abajo")
         elif param == "D":
             print("Funcion percutor Derecha")
         elif param == "I":
-            print ("Funcion percutor Izquierda")
+            print("Funcion percutor Izquierda")
         elif param == "DI":
-            print ("Funcion percutor Derecha e Izquierda")
+            print("Funcion percutor Derecha e Izquierda")
         elif param == "AB":
-            print ("Funcion percutor Arriba y Abajo")
+            print("Funcion percutor Arriba y Abajo")
         else:
-            print ("Parametro incorrecto")
+            print("Parametro incorrecto")
 
     elif name == "Abanico":
         if param == "A":
-            print ("Funcion Abanico Arriba")
+            print("Funcion Abanico Arriba")
         elif param == "B":
             print("Funcion Abanico Abajo")
         else:
-            print ("Parametro incorrecto")
+            print("Parametro incorrecto")
 
     elif name == "Vertical":
         if param == "D":
-            print ("Funcion Abanico Arriba")
+            print("Funcion Abanico Arriba")
         elif param == "I":
             print("Funcion Abanico Abajo")
         else:
-            print ("Parametro incorrecto")
+            print("Parametro incorrecto")
     elif name == "Golpe":
-        print ("Funcion Golpe Llamada")
+        print("Funcion Golpe Llamada")
     elif name == "Vibrato":
-        print ("Funcion Vibrato Llamada" + str(param))
+        print("Funcion Vibrato Llamada" + str(param))
 
 
-
-
-def Metronomo(param,speed):
+def Metronomo(param, speed):
     global metronome
     if param == "A":
         if metronome:
@@ -155,6 +152,7 @@ def Metronomo(param,speed):
         else:
             PrintText("Metronomo Ya esta desactivado")
 
+
 def PrintText(text):
     box.configure(state="normal")
     box.insert("end", text + "\n")
@@ -162,7 +160,7 @@ def PrintText(text):
 
 
 class statement_set():
-    def __init__(self,var,sentence):
+    def __init__(self, var, sentence):
 
         self.type = "set"
         self.var = var
@@ -174,14 +172,14 @@ class statement_set():
     def GetSentence(self):
         return self.sentence
 
-    def Execute(self,vars):
+    def Execute(self, vars):
         value = self.sentence.Execute(vars)
         if (value == "Error"):
             return "Error"
         elif (self.sentence.GetType() == "operation"):
             var = Var(self.var, value, "int")
             return var
-        elif (self.sentence.GetType() == "function"): #CAMBIAR POR ALGO QUE DETECTE LAS FUNCIONES
+        elif (self.sentence.GetType() == "function"):  # CAMBIAR POR ALGO QUE DETECTE LAS FUNCIONES
             return "Error"
         elif (self.sentence.GetType() == "str"):
             var = Var(self.var, value, "str")
@@ -192,23 +190,105 @@ class statement_set():
         else:
             return "Error"
 
+
 class statement_while():
 
-    def __init__(self,condition,block):
+    def __init__(self, condition, block):
         self.type = "while"
         self.condition = condition
         self.block = block
 
+
 class statement_for():
-    def __init__(self, name):
-        self.name = name
-        self.type = "state"
+    def __init__(self, var, max, step_num, block):
+        self.var = var
+        self.max = max
+        self.step_num = step_num
+        self.block = block
+        self.type = "statement_for"
+        self.vars = []
+        self.location = None
 
     def GetType(self):
         return self.type
 
-    def Execute(self):
-        pass
+    def Execute(self, vars, location):
+        self.vars = vars
+        self.location = location
+        temp_var = Var(self.var, 0, "int")
+        skip = 0
+        if self.location.GetName == "@Principal":
+            global_vars.append(temp_var)
+        else:
+            self.location.GetVars.append(temp_var)
+        for i in range(0, self.max):
+            temp_var.SetValue(i)
+            if skip == 0:
+                skip = self.step_num
+                temp = self.block
+                temp2 = None
+                while (temp != None):
+                    if (type(temp) != YaccSymbol):
+                        if (len(temp) > 1):
+                            temp2 = temp[0].value
+
+                        else:
+                            temp2 = temp[0].value
+                    else:
+                        temp2 = temp.value
+                    # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+                    if (temp2.GetType() == "set"):
+
+                        new_var = temp2.GetAction().Execute(self.location.GetVars())
+                        if new_var != "Error":
+
+                            if (self.location.GetName() == "@Principal"):
+                                global_vars.append(new_var)
+                            else:
+                                self.vars.append(new_var)
+
+                        else:
+                            PrintText("Error en set de la funcion principal " + self.name)
+                            break
+
+                    elif (temp2.GetType() == "sentence"):
+                        if temp2.GetAction().GetType() == "function":
+                            res = temp2.GetAction().Execute(self.vars)
+                            if (res == "Error"):
+                                PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                                break
+
+                    elif (temp2.GetType() == "statement_if"):
+                        res = temp2.GetAction().Execute(self.vars, self)
+                        if (res == "Error"):
+                            PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                            break
+
+                    elif (temp2.GetType() == "statement_for"):
+                        res = res = temp2.GetAction().Execute(self.vars, self)
+                        if(res == "Error"):
+                            PrintText("Error en statement for en linea" + str(temp2.GetAction().GetLine()))
+
+                    elif (temp2.GetType() == "encaso"):
+                        pass
+
+                    elif (temp2.GetType() == "print"):
+                        res = temp2.GetAction().Execute(self.vars)
+                        if res == "Error":
+                            PrintText("Error en print en " + str(temp2.GetAction().GetLine()))
+                            break
+
+                    elif (temp2.GetType() == "def"):
+                        PrintText("Error: def dentro de for")
+                        return "Error"
+
+                    if (type(temp) == YaccSymbol):  # al final
+                        temp = None
+                    else:
+                        temp = temp[1].value
+            else:
+                skip -= 1
+
 
 
 class statement_if():
@@ -225,15 +305,89 @@ class statement_if():
     def GetType(self):
         return self.type
 
-    def Execute(self,vars,location):
+    def Execute(self, vars, location):
         self.location = location
         self.vars = vars
+        print(self.relation)
         if self.relation.GetType() == "relation":
 
-            if not self.isElse:
-                #CODIGO SIN ELSE
-                if self.relation.Execute():
-                    temp = self.block
+            flag = self.relation.Execute(self.vars)
+            if flag == "Error":
+                PrintText("Error en la condicion del if " + self.block.GetAction().GetLine())
+                return "Error"
+            else:
+                if not self.isElse:
+                    # CODIGO SIN ELSE
+                    if self.relation.Execute(vars):
+                        temp = self.block
+                        temp2 = None
+                        while (temp != None):
+                            if (type(temp) != YaccSymbol):
+                                if (len(temp) > 1):
+                                    temp2 = temp[0].value
+
+                                else:
+                                    temp2 = temp[0].value
+                            else:
+                                temp2 = temp.value
+                            # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+                            if (temp2.GetType() == "set"):
+
+                                new_var = temp2.GetAction().Execute(self.vars)
+                                if new_var != "Error":
+
+                                    if (self.location.GetName() == "@Principal"):
+                                        global_vars.append(new_var)
+                                    else:
+                                        self.location.GetVars().append(new_var)
+
+                                else:
+                                    PrintText(
+                                        "Error en la ejecucion de la funcion " + self.location.GetName() + " en un set")
+                                    break
+
+                            elif (temp2.GetType() == "sentence"):
+                                if temp2.GetAction().GetType() == "function":
+                                    res = temp2.GetAction().Execute(self.location.GetVars(), self.location)
+                                    if (res == "Error"):
+                                        PrintText(
+                                            "Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                                        return "Error"
+
+                            elif (temp2.GetType() == "statement_if"):
+                                res = temp2.GetAction().Execute(self.location.GetVars(), self.location)
+                                if (res == "Error"):
+                                    PrintText("Error en statement if en rutina" + self.location.GetName())
+                                    return "Error"
+
+
+                            elif (temp2.GetType() == "statement_for"):
+                                res = res = temp2.GetAction().Execute(self.vars, self)
+                                if (res == "Error"):
+                                    PrintText("Error en statement if en linea" + str(temp2.GetAction().GetLine()))
+
+                            elif (temp2.GetType() == "encaso"):
+                                pass
+
+                            elif (temp2.GetType() == "print"):
+                                temp2.GetAction().Execute(self.vars)
+
+                            elif (temp2.GetType() == "def"):
+                                return "Error"
+
+                            if (type(temp) == YaccSymbol):  # al final
+                                temp = None
+                            else:
+                                temp = temp[1].value
+
+                    else:
+                        pass
+                else:
+                    # CODIGO CON ELSE PRESENTE
+                    if self.relation.Execute():
+                        temp = self.block
+                    else:
+                        temp = self.else_block
                     temp2 = None
                     while (temp != None):
                         if (type(temp) != YaccSymbol):
@@ -253,23 +407,24 @@ class statement_if():
                                 if (self.location.GetName() == "@Principal"):
                                     global_vars.append(new_var)
                                 else:
-                                    self.location.GetVars().append(new_var)
+                                    self.vars.append(new_var)
 
                             else:
-                                PrintText("Error en la ejecucion de la funcion " + self.location.GetName() + " en un set")
+                                PrintText("Error en la ejecucion de la funcion " + self.name)
                                 break
 
                         elif (temp2.GetType() == "sentence"):
                             if temp2.GetAction().GetType() == "function":
-                                res = temp2.GetAction().Execute(self.location.GetVars(), self.location)
+                                res = temp2.GetAction().Execute(self.vars)
                                 if (res == "Error"):
-                                    PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                                    PrintText(
+                                        "Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
                                     break
 
                         elif (temp2.GetType() == "statement_if"):
-                            res = temp2.GetAction().Execute(self.location.GetVars(), self.location)
+                            res = temp2.GetAction().Execute(self.vars, self)
                             if (res == "Error"):
-                                PrintText("Error en statement if en rutina" + self.location.GetName())
+                                PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
                                 break
 
                         elif (temp2.GetType() == "statement_for"):
@@ -282,76 +437,12 @@ class statement_if():
                             temp2.GetAction().Execute(self.vars)
 
                         elif (temp2.GetType() == "def"):
-                            return "Error"
+                            pass
 
                         if (type(temp) == YaccSymbol):  # al final
                             temp = None
                         else:
                             temp = temp[1].value
-
-                else:
-                    pass
-            else:
-                #CODIGO CON ELSE PRESENTE
-                if self.relation.Execute():
-                    temp = self.block
-                else:
-                    temp = self.else_block
-                temp2 = None
-                while (temp != None):
-                    if (type(temp) != YaccSymbol):
-                        if (len(temp) > 1):
-                            temp2 = temp[0].value
-
-                        else:
-                            temp2 = temp[0].value
-                    else:
-                        temp2 = temp.value
-                    # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
-                    if (temp2.GetType() == "set"):
-
-                        new_var = temp2.GetAction().Execute(self.vars)
-                        if new_var != "Error":
-
-                            if (self.name == "@Principal"):
-                                global_vars.append(new_var)
-                            else:
-                                self.vars.append(new_var)
-
-                        else:
-                            PrintText("Error en la ejecucion de la funcion " + self.name)
-                            break
-
-                    elif (temp2.GetType() == "sentence"):
-                        if temp2.GetAction().GetType() == "function":
-                            res = temp2.GetAction().Execute(self.vars)
-                            if (res == "Error"):
-                                PrintText(
-                                    "Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
-                                break
-
-                    elif (temp2.GetType() == "statement_if"):
-                        res = temp2.GetAction().Execute(self.vars, self)
-                        if (res == "Error"):
-                            PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
-                            break
-
-                    elif (temp2.GetType() == "statement_for"):
-                        pass
-
-                    elif (temp2.GetType() == "encaso"):
-                        pass
-
-                    elif (temp2.GetType() == "print"):
-                        temp2.GetAction().Execute(self.vars)
-
-                    elif (temp2.GetType() == "def"):
-                        pass
-
-                    if (type(temp) == YaccSymbol):  # al final
-                        temp = None
-                    else:
-                        temp = temp[1].value
 
         else:
             return "Error"
@@ -368,8 +459,9 @@ class statement_EnCaso():
     def Execute(self):
         pass
 
+
 class statement_DEF():
-    def __init__(self, name,block):
+    def __init__(self, name, block):
         self.name = name
         self.block = block
         self.type = "def"
@@ -400,7 +492,7 @@ class statement_DEF():
                     temp2 = temp[0].value
             else:
                 temp2 = temp.value
-        #COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+            # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
             if (temp2.GetType() == "set"):
 
                 new_var = temp2.GetAction().Execute(self.vars)
@@ -423,7 +515,7 @@ class statement_DEF():
                         break
 
             elif (temp2.GetType() == "statement_if"):
-                res = temp2.GetAction().Execute(self.vars,self)
+                res = temp2.GetAction().Execute(self.vars, self)
                 if (res == "Error"):
                     PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
                     break
@@ -443,44 +535,61 @@ class statement_DEF():
             elif (temp2.GetType() == "def"):
                 pass
 
-            if (type(temp) == YaccSymbol): #al final
+            if (type(temp) == YaccSymbol):  # al final
                 temp = None
             else:
                 temp = temp[1].value
 
 
 class PrintConsole():
-    def __init__(self, id,sentence):
+    def __init__(self, id, sentence,data_type):
         self.sentence = sentence
         self.outputBox = box
         self.type = type
         self.text = ""
         self.vars = []
         self.type = "print"
-        self.id = id.replace("#id","")
+        self.id = id.replace("#id", "")
+        self.data_type = data_type
 
-    def Execute(self,vars):
+    def Execute(self, vars):
         if self.id == "println!":
-
-            self.vars = vars
-            if(self.sentence.GetType() != "function"):
-                self.text = str(self.sentence.Execute(self.vars))
-                self.Insert()
-                return "Exito"
+            if self.data_type == "var":
+                if self.vars != []:
+                    for i in self.vars:
+                        if i.GetName() == self.sentence:
+                            self.text = str(i.GetValue())
+                            self.Insert()
+                            return "Exito"
+                    PrintText("Error en print en linea " + str(self.sentence.GetLine()))
+                    return "Error"
+                if global_vars != []:
+                    for i in global_vars:
+                        if i.GetName() == self.sentence:
+                            self.text = str(i.GetValue())
+                            self.Insert()
+                            return "Exito"
             else:
-                return "Error"
+                self.vars = vars
+                if (self.sentence.GetType() != "function"):
+                    print(self.sentence.GetValue())
+                    self.text = str(self.sentence.Execute(self.vars))
+                    self.Insert()
+                    return "Exito"
+                else:
+                    return "Error"
         else:
             return "Error"
 
     def Insert(self):
         self.outputBox.configure(state="normal")
-        self.outputBox.insert("end", self.text.replace("+"," ") + "\n")
+        self.outputBox.insert("end", self.text.replace("+", " ") + "\n")
         self.outputBox.configure(state="disabled")
 
 
 class sentence():
 
-    def __init__(self,value,sentype,line):
+    def __init__(self, value, sentype, line):
         self.value = value
         self.sentype = sentype
         self.vars = []
@@ -489,9 +598,6 @@ class sentence():
             self.value = "true"
         elif self.sentype == "false":
             self.value = "false"
-        print(self.sentype)
-        print(self.value)
-
 
     def GetValue(self):
         return self.value
@@ -502,9 +608,11 @@ class sentence():
     def GetLine(self):
         return self.line
 
-    def Execute(self,vars):
+    def Execute(self, vars):
+
         self.vars = vars
         if (self.sentype == "str"):
+
             new_str = self.SwitchVars(self.value)
             str_list = new_str.split(",")
             res = ""
@@ -516,34 +624,15 @@ class sentence():
                 else:
                     PrintText("Error de operacion con string, solo soporta +")
                     return "Error"
-            #print("FinalString = " + str(res))
+            # print("FinalString = " + str(res))
             return res
         elif (self.sentype == "true"):
             return "true"
         elif (self.sentype == "false"):
             return "false"
         elif (self.sentype == "relation"):
-            pass
-        elif (self.sentype == "type"):
-            print(self.value)
-            split_val = self.value.split("&")
-            if (split_val[0] == "type"):
-                print(split_val[1])
-                for i in self.vars:
-                    if i.GetName() == split_val[1]:
-                        PrintText("Tipo de variable " + split_val[1] + " = " + i.GetType())
-                        return "Exito"
-                for i in global_vars:
-                    if i.GetName() == split_val[1]:
-                        PrintText("Tipo de variable " + split_val[1] + " = " + i.GetType())
-                        return "Exito"
-                    if i.GetType() == "str":
-                        self.sentype = "str"
-                PrintText("Error: Variable no encontrada")
-                return "Error"
-            else:
-                PrintText("Error: Funcion introducida no existe")
-                return "Error"
+            splited = self.value.split("$")
+
         elif self.sentype == "operation":
 
             new_op = self.SwitchVars(self.value)
@@ -553,51 +642,68 @@ class sentence():
                 if self.sentype == "operation":
                     res = self.FormList(new_op)
                     return res
-
+        elif (self.sentype == "type"):
+            split_val = self.value.split("&")
+            if (split_val[0] == "type"):
+                print(split_val[1])
+                for i in self.vars:
+                    if i.GetName() == split_val[1]:
+                        # PrintText("Tipo de variable " + split_val[1] + " = " + i.GetType())
+                        return i.GetType()
+                for i in global_vars:
+                    if i.GetName() == split_val[1]:
+                        # PrintText("Tipo de variable " + split_val[1] + " = " + i.GetType())
+                        return i.GetType()
+                PrintText("Error: Variable no encontrada")
+                return "Error"
+            else:
+                PrintText("Error: Funcion introducida no existe")
+                return "Error"
 
         elif self.sentype == "function":
+            # print("ENTRO A FUNCTION")
             split = self.value.split("$")
-            #print("split: ", split)
 
             if (split[0] == "Golpe"):
-                Funciones(split[0],"none")
+                Funciones(split[0], "none")
                 return "Exito"
             elif (split[0] == "Percutor" or split[0] == "Abanico" or split[0] == "Vertical" or split[0] == "Vibrato"):
                 if split[0] == "Vibrato":
                     try:
-                        num = split[1].replace(",","")
+                        num = split[1].replace(",", "")
                         int(num)
-                        Funciones(split[0],int(num))
+                        Funciones(split[0], int(num))
 
                         return "Exito"
                     except (ValueError):
                         return "Error"
                 elif split[0] == "Vertical":
                     if (split[1] == "D" or split[1] == "I"):
-                        Funciones(split[0],split[1])
+                        Funciones(split[0], split[1])
                         return "Exito"
                     else:
                         return "Error"
                 elif split[0] == "Abanico":
                     if (split[1] == "A" or split[1] == "B"):
-                        Funciones(split[0],split[1])
+                        Funciones(split[0], split[1])
                         return "Exito"
                     else:
                         return "Error"
                 elif split[0] == "Percutor":
-                    if (split[1] == "D" or split[1] == "I" or split[1] == "A" or split[1] == "B" or split[1] == "AB" or split[1] == "DI"):
-                        Funciones(split[0],split[1])
+                    if (split[1] == "D" or split[1] == "I" or split[1] == "A" or split[1] == "B" or split[1] == "AB" or
+                            split[1] == "DI"):
+                        Funciones(split[0], split[1])
                         return "Exito"
                     else:
                         return "Error"
                 else:
                     return "Error"
             elif split[0] == "Metronomo":
-                if (split[1]=="A" or split[1] == "D"):
+                if (split[1] == "A" or split[1] == "D"):
                     try:
-                        num = split[2].replace(",","")
+                        num = split[2].replace(",", "")
                         int(num)
-                        Metronomo(split[1],int(num))
+                        Metronomo(split[1], int(num))
                         return "Exito"
                     except (ValueError):
                         return "Error"
@@ -605,75 +711,78 @@ class sentence():
                     return "Error"
             else:
                 return "Error"
+        else:
+            PrintText("Error: Sentencia" + self.sentype + "no reconocida")
 
-
-    def SwitchVars(self,op):
-        new_op = op.replace("(","")
-        new_op = new_op.replace(")","")
+    def SwitchVars(self, op):
+        new_op = op.replace("(", "")
+        new_op = new_op.replace(")", "")
         if new_op[-1] == ",":
             op_split = op.split(",")[0:-1]
         else:
             op_split = op.split(",")
         for i in op_split:
-            if i[0]=="@":
+            if i[0] == "@":
                 val = self.ReplaceVar(i)
                 if val != "Error":
-                    op = op.replace(i,str(val))
+                    op = op.replace(i, str(val))
                 else:
                     return "Error"
             else:
                 pass
         return op
 
-    def ReplaceVar(self,name):
+    def ReplaceVar(self, name):
         for i in self.vars:
             if i.GetName() == name:
                 return i.GetValue()
             if i.GetType() == "str":
-                self.sentype = "str"
+                if self.sentype != "relation":
+                    self.sentype = "str"
         for i in global_vars:
             if i.GetName() == name:
                 return i.GetValue()
             if i.GetType() == "str":
-                self.sentype = "str"
+                if self.sentype != "relation":
+                    self.sentype = "str"
         PrintText("Error: Variable no encontrada")
         return "Error"
 
-    def CheckPar(self,opstr):
+    def CheckPar(self, opstr):
         started = False
         another = 0
         parlist = []
         par = ""
-        i=0
+        i = 0
         while i < len(opstr):
             if not started:
                 if opstr[i] == "(":
                     started = True
-                    i+=1
+                    i += 1
 
             else:
                 if opstr[i] == "(":
-                    another+=1
+                    another += 1
                 elif (opstr[i] == ")" and another > 0):
-                    another -=1
-                elif (opstr[i]==")" and another == 0):
+                    another -= 1
+                elif (opstr[i] == ")" and another == 0):
                     started = False
                     parlist += [par]
                     par = ""
-                    i+=1
+                    i += 1
                 par += opstr[i]
-            i+=1
+            i += 1
 
         if parlist != []:
-            for i in range (0,len(parlist)):
-                if (parlist[i][0]!= ","):
-                    parlist[i] = ","+parlist[i]
-                lalala = "("+parlist[i]+")"
+            for i in range(0, len(parlist)):
+                if (parlist[i][0] != ","):
+                    parlist[i] = "," + parlist[i]
+                lalala = "(" + parlist[i] + ")"
                 laalala = str(self.FormList(parlist[i]))
-                opstr = opstr.replace(lalala,laalala)
+                opstr = opstr.replace(lalala, laalala)
         return opstr
 
-    def FormList(self,opstr):
+    def FormList(self, opstr):
 
         checked_op = self.CheckPar(opstr)
 
@@ -682,15 +791,14 @@ class sentence():
         elif (checked_op[-1] == ","):
             checked_op = checked_op[0:-1]
 
-
         result = Solve(checked_op.split(","))
 
         return result
 
-    def VerifyOp(self,op):
+    def VerifyOp(self, op):
         string = False
         num_var = False
-        #print("op in verifyop: "+op)
+        # print("op in verifyop: "+op)
         op_split = op.split(",")[0:-1]
         if len(op_split) == 1:
             num_var = True
@@ -703,7 +811,7 @@ class sentence():
                     float(i)
                     num_var = True
                 except(ValueError):
-                    #print(i[0])
+                    # print(i[0])
                     if (i[0] == "@"):
                         num_var = True
                     else:
@@ -716,6 +824,185 @@ class sentence():
         else:
             return "Error"
 
+    def SolveRelation(self,split):
+        if split[-1] == "NUM_NUM":
+            if split[1] == ">":
+                if float(split[0]) > float(split[2]):
+                    return True
+            if split[1] == "<":
+                if float(split[0]) < float(split[2]):
+                    return True
+            if split[1] == ">=":
+                if float(split[0]) >= float(split[2]):
+                    return True
+            if split[1] == "<=":
+                if float(split[0]) <= float(split[2]):
+                    return True
+            if split[1] == "==":
+                if float(split[0]) == float(split[2]):
+                    return True
+            if split[1] == "<>":
+                if float(split[0]) != float(split[2]):
+                    return True
+            else:
+                return False
+        elif split[-1] == "NUM_VAR":
+            var = self.GetVar(split[2])
+            if var != "Error" and var.GetType() == "int":
+                if split[1] == ">":
+                    if float(split[0]) > float(var.GetValue()):
+                        return True
+                if split[1] == "<":
+                    if float(split[0]) < float(var.GetValue()):
+                        return True
+                if split[1] == ">=":
+                    if float(split[0]) >= float(var.GetValue()):
+                        return True
+                if split[1] == "<=":
+                    if float(split[0]) <= float(var.GetValue()):
+                        return True
+                if split[1] == "==":
+                    if float(split[0]) == float(var.GetValue()):
+                        return True
+                if split[1] == "<>":
+                    if float(split[0]) != float(var.GetValue()):
+                        return True
+                else:
+                    return False
+            else:
+                return "Error"
+
+        elif split[-1] == "VAR_VAR":
+            var1 = self.GetVar(split[0])
+            var2 = self.GetVar(split[2])
+            if var1 != "Error" and var2 != "Error":
+                if var1.GetType() == "int" and var2.GetType() == "int":
+                    if split[1] == ">":
+                        if float(var1.GetValue()) > float(var2.GetValue()):
+                            return True
+                    if split[1] == "<":
+                        if float(var1.GetValue()) < float(var2.GetValue()):
+                            return True
+                    if split[1] == ">=":
+                        if float(var1.GetValue()) >= float(var2.GetValue()):
+                            return True
+                    if split[1] == "<=":
+                        if float(var1.GetValue()) <= float(var2.GetValue()):
+                            return True
+                    if split[1] == "==":
+                        if float(var1.GetValue()) == float(var2.GetValue()):
+                            return True
+                    if split[1] == "<>":
+                        if float(var1.GetValue()) != float(var2.GetValue()):
+                            return True
+                else:
+                    PrintText("Error: No se puede realizar comparacion, linea " + str(self.line))
+                    return "Error"
+            else:
+                PrintText("Error: Variable no definida, linea " + str(self.line))
+                return "Error"
+        elif split[-1] == "VAR_NUM":
+            var = self.GetVar(split[0])
+            if var != "Error" and var.GetType() == "int":
+                if split[1] == ">":
+                    if float(var.GetValue()) > float(split[2]):
+                        return True
+                if split[1] == "<":
+                    if float(var.GetValue()) < float(split[2]):
+                        return True
+                if split[1] == ">=":
+                    if float(var.GetValue()) >= float(split[2]):
+                        return True
+                if split[1] == "<=":
+                    if float(var.GetValue()) <= float(split[2]):
+                        return True
+                if split[1] == "==":
+                    if float(var.GetValue()) == float(split[2]):
+                        return True
+                if split[1] == "<>":
+                    if float(var.GetValue()) != float(split[2]):
+                        return True
+                else:
+                    return False
+            else:
+                PrintText("Error: Variable no definida, linea " + str(self.line))
+                return "Error"
+        elif split[-1] == "VAR_STR":
+            var = self.GetVar(split[0])
+            if var != "Error" and var.GetType() == "string":
+                if split[1] == "==":
+                    if var.GetValue() == split[2]:
+                        return True
+                if split[1] == "<>":
+                    if var.GetValue() != split[2]:
+                        return True
+                if split[1] == ">" or split[1] == "<" or split[1] == ">=" or split[1] == "<=":
+                    PrintText("Error: No se puede realizar comparacion, linea " + str(self.line))
+                    return "Error"
+                else:
+                    return False
+            else:
+                PrintText("Error: Variable no definida, linea " + str(self.line))
+                return "Error"
+        elif split[-1] == "STR_STR":
+            if split[1] == "==":
+                if split[0] == split[2]:
+                    return True
+            if split[1] == "<>":
+                if split[0] != split[2]:
+                    return True
+            if split[1] == ">" or split[1] == "<" or split[1] == ">=" or split[1] == "<=":
+                PrintText("Error: No se puede realizar comparacion, linea " + str(self.line))
+                return "Error"
+            else:
+                return False
+        elif split[-1] == "VAR_BOOL":
+            var = self.GetVar(split[0])
+            if var != "Error" and var.GetType() == "bool":
+                if split[1] == "==":
+                    if var.GetValue() == split[2]:
+                        return True
+                if split[1] == "<>":
+                    if var.GetValue() != split[2]:
+                        return True
+                if split[1] == ">" or split[1] == "<" or split[1] == ">=" or split[1] == "<=":
+                    PrintText("Error: No se puede realizar comparacion, linea " + str(self.line))
+                    return "Error"
+                else:
+                    return False
+            else:
+                PrintText("Error: Variable no definida, linea " + str(self.line))
+                return "Error"
+        elif split[-1] == "BOOL_VAR":
+            var = self.GetVar(split[0])
+            if var != "Error" and var.GetType() == "bool":
+                if split[1] == "==":
+                    if var.GetValue() == split[2]:
+                        return True
+                if split[1] == "<>":
+                    if var.GetValue() != split[2]:
+                        return True
+                if split[1] == ">" or split[1] == "<" or split[1] == ">=" or split[1] == "<=":
+                    PrintText("Error: No se puede realizar comparacion, linea " + str(self.line))
+                    return "Error"
+                else:
+                    return False
+            else:
+                PrintText("Error: Variable no definida, linea " + str(self.line))
+                return "Error"
+
+
+    def GetVar(self,name):
+        if self.vars != []:
+            for i in self.vars:
+                if i.GetName() == name:
+                    return i
+        if global_vars != []:
+            for i in global_vars:
+                if i.GetName() == name:
+                    return i
+        PrintText("Error: Variable not found")
+        return "Error"
 
 class Block():
 
@@ -724,7 +1011,7 @@ class Block():
         self.type = block_type
         self.next = None
 
-    def SetNext(self,next):
+    def SetNext(self, next):
         self.next = next
 
     def GetNext(self):
@@ -736,24 +1023,24 @@ class Block():
     def GetType(self):
         return self.type
 
-    def Execute(self,vars):
+    def Execute(self, vars):
         self.action.Execute(vars)
 
 
 class Var():
 
-    def __init__(self,name,value,type):
+    def __init__(self, name, value, type):
         self.name = name
         self.value = value
         self.type = type
 
-    def SetName(self,name):
+    def SetName(self, name):
         self.name = name
 
     def GetName(self):
         return self.name
 
-    def SetValue(self,value):
+    def SetValue(self, value):
         self.value = value
 
     def GetValue(self):
