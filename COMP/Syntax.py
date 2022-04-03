@@ -311,7 +311,6 @@ def Parsear(cadena,box):
     #lex.TokenGen(cadena)
     result = parser.parse(cadena)
     detected = False
-
     if semantic.methods != []:
         for i in semantic.methods:
             if i.GetName() == "@Principal":
