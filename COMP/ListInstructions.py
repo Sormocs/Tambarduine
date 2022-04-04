@@ -82,7 +82,7 @@ class ListInstructions:
 
                 self.arduino.StartExecite()
 
-            time.sleep(1)
+            time.sleep(1.5)
             aux = aux.getSiguiente()
 
 

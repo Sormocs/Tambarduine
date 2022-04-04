@@ -58,9 +58,9 @@ class ArduinoSerial:
         """
 
         if move == "A":
-            self.send("A#1") #Abanico#A
+            self.send("A#0") #Abanico#A
         elif move == "B":
-            self.send("A#2") #Abanico#B
+            self.send("A#1") #Abanico#B
 
     def Vertical(self, move):
 
@@ -71,9 +71,9 @@ class ArduinoSerial:
         """
 
         if move == "D":
-            self.send("V#1") #Vertical#D
+            self.send("V#0") #Vertical#D
         elif move == "I":
-            self.send("V#2") #Vertical#I
+            self.send("V#1") #Vertical#I
 
     def Percutor(self, move):
 
@@ -88,13 +88,13 @@ class ArduinoSerial:
         elif move == "B":
             self.send("P#2") #Percutor#B
         elif move == "D":
-            self.send("P#4") #Percutor#D
+            self.send("P#3") #Percutor#D
         elif move == "I":
-            self.send("P#5") #Percutor#I
+            self.send("P#4") #Percutor#I
         elif move == "AB":
-            self.send("P#6") #Percutor#AB
+            self.send("P#5") #Percutor#AB
         elif move == "DI":
-            self.send("P#7")  #Percutor#DI
+            self.send("P#6")  #Percutor#DI
 
     def Golpe(self):
 

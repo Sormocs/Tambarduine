@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-#define PINZA_ABIERTA 110
+#define PINZA_ABIERTA 95
 #define PINZA_CERRADA 7
 #define PINZA_NEUTRAL 60
 
@@ -165,7 +165,7 @@ private:
      */
     void Percutor(int orden){
         switch (orden){
-            case 1:
+            case 3:
                 //Golpea el pandero por la derecha
                 ejePinzaServo.write(EJE_PINZA_HORIZONTAL);  //Coloca la pinza en horizontal
                 delay(300);
@@ -176,7 +176,7 @@ private:
                 delay(500);
                 break;
 
-            case 2:
+            case 4:
                 //Golpea el pandero por la izquierda
                 ejePinzaServo.write(EJE_PINZA_HORIZONTAL);  //Coloca la pinza en horizontal
                 delay(300);
@@ -187,7 +187,7 @@ private:
                 delay(500);
                 break;
 
-            case 3:
+            case 1:
                 //Golpea el pandero por arriba
                 ejePinzaServo.write(EJE_PINZA_VERTICAL);//Coloca la pinza en vertical
                 pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
@@ -199,7 +199,7 @@ private:
                 vertServo.write(VERTICAL_NEUTRAL);      //Inclina el pandero a la posición neutral
                 break;
 
-            case 4:
+            case 2:
                 //Golpea el pandero por abajo
                 ejePinzaServo.write(EJE_PINZA_VERTICAL);    //Coloca la pinza en vertical
                 pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
@@ -212,7 +212,7 @@ private:
                 delay(500);
                 break;
 
-            case 5:
+            case 6:
                 //Golpea el pandero por la izquierda y la derecha a la vez
                 pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
                 ejePinzaServo.write(EJE_PINZA_HORIZONTAL);  //Coloca la pinza en horizontal
@@ -225,7 +225,7 @@ private:
 
                 break;
 
-            case 6:
+            case 5:
                 //Golpea el pandero por arriba y abajo a la vez
                 ejePinzaServo.write(EJE_PINZA_VERTICAL);//Coloca la pinza en vertical
                 pinzaServo.write(PINZA_ABIERTA);        //Abre la pinza
@@ -250,17 +250,18 @@ private:
      * @brief Golpea el pandero al centro
      */
     void Golpe(){
-        pinzaServo.write(PINZA_CERRADA);                //Cierra la pinza
-        ejePinzaServo.write(EJE_PINZA_HORIZONTAL);      //Coloca la pinza en horizontal
-        delay(400);
-        vertServo.write(VERTICAL_NEUTRAL-50);           //Inclina el pandero hacia abajo
+        pinzaServo.write(PINZA_CERRADA);  
+        delay(200);              
+        ejePinzaServo.write(EJE_PINZA_HORIZONTAL);      
         delay(200);
-        vertServo.write(VERTICAL_NEUTRAL);              //Inclina el pandero a la posición neutral
-        delay(100);
-        pinzaServo.write(PINZA_NEUTRAL);                //Coloca la pinza en posición neutral
-        delay(100);
-        ejePinzaServo.write(EJE_PINZA_NEUTRAL);         //Coloca la pinza en diagonal
-        delay(100);
+        vertServo.write(VERTICAL_NEUTRAL-50);
+        delay(200);
+        vertServo.write(VERTICAL_NEUTRAL);  
+        delay(200);           
+        pinzaServo.write(PINZA_NEUTRAL);\
+        delay(200);                
+        ejePinzaServo.write(EJE_PINZA_NEUTRAL);         
+        
 
         MetronomoEspec(tempo*1000-1000);
 
@@ -445,11 +446,8 @@ private:
         if (!configurado){
             Restablecer();
             Config();
-            //Vibratto(5);
-            //Abanico(1);
-            //Vertical(1);
-            //Golpe();
-            //Percutor(1);
+            
+            
             
         } else if (metronomo){
             while (acciones.Longitud() > 0){
