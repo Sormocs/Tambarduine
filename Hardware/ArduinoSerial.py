@@ -13,7 +13,8 @@ class ArduinoSerial:
         self.tempo = 0
         self.canSend = False
         self.arduino = serial.Serial('COM4', 9600)
-        time.sleep(0.5)
+        time.sleep(2)
+
 
     def send(self, message):
 
@@ -26,6 +27,7 @@ class ArduinoSerial:
         if self.canSend:
             print(message)
             self.arduino.write(message.encode())
+
 
 
     def receive(self):
@@ -143,5 +145,22 @@ class ArduinoSerial:
 
         self.canSend = False
 
-
+# arduino = ArduinoSerial()
+#
+# while True:
+#
+#     action = input("Action: ")
+#
+#     if action == "A":
+#         arduino.Abanico("A")
+#     elif action == "V":
+#         arduino.Vibrato(5)
+#     elif action == "P":
+#         arduino.Percutor("A")
+#     elif action == "G":
+#         arduino.Golpe()
+#     elif action == "M":
+#         arduino.Metronomo(1)
+#     elif action == "S":
+#         arduino.StartExecute()
 

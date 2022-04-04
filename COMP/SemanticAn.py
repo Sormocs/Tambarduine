@@ -101,8 +101,13 @@ def FormOp(nums, symbs):
     return res
 
 def CreateListInstruccions():
-    global instruccions
-    instruccions = ListInstructions.ListInstructions()
+    global instruccions, metronome
+
+    metronome = False
+
+    if instruccions == None:
+
+        instruccions = ListInstructions.ListInstructions()
 
 def StartArduinoExecution():
 
@@ -111,23 +116,28 @@ def StartArduinoExecution():
 def Funciones(name, param):
     if name == "Percutor":
 
-        instruccions.AddInstruccion("Percutor", param)
+        print("Se agrego una funcion de Percutor", param)
+        instruccions.add("Percutor", param)
 
     elif name == "Abanico":
 
-        instruccions.AddInstruccion("Abanico", param)
+        print("Se agrego una funcion de Abanico", param)
+        instruccions.add("Abanico", param)
 
     elif name == "Vertical":
 
-        instruccions.AddInstruccion("Vertical", param)
+        print("Se agrego una funcion de Vertical", param)
+        instruccions.add("Vertical", param)
 
     elif name == "Golpe":
 
-        instruccions.AddInstruccion("Golpe", param)
+        print("Se agrego una funcion de Golpe", param)
+        instruccions.add("Golpe", param)
 
     elif name == "Vibrato":
 
-        instruccions.AddInstruccion("Vibrato", param)
+        print("Se agrego una funcion de Vibrato", param)
+        instruccions.add("Vibrato", param)
 
 
 def Metronomo(param, speed):
@@ -135,10 +145,10 @@ def Metronomo(param, speed):
     if param == "A":
         if metronome:
             PrintText("Metronomo Ya esta activado")
-            instruccions.AddInstruccion("Metronomo", speed)
+            instruccions.add("Metronomo", speed)
         else:
             metronome = True
-            instruccions.AddInstruccion("Metronomo", speed)
+            instruccions.add("Metronomo", speed)
             PrintText("Se ha activado el metronomo")
     else:
         if metronome:

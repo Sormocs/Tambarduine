@@ -244,7 +244,7 @@ private:
         }
 
         // Hace sonar el metrónomo en el momento adecuado
-        if (tempo > 1000) {
+        if (tempo > 1) {
             MetronomoEspec(tempo*1000-1000);
         }
 
@@ -371,7 +371,6 @@ private:
         pinzaServo.attach(pinzaServoPin);
         ejePinzaServo.attach(ejePinzaServoPin);
         pinMode(3 , OUTPUT);
-        digitalWrite(3 , LOW); 
 
     }
 
@@ -475,8 +474,9 @@ private:
                         Vibratto(accion->direccion);
                         break;
                 }
+                //digitalWrite(3 , LOW); 
                 configurado = false;
-                digitalWrite(3 , LOW); 
+                
             }
         } else {
 

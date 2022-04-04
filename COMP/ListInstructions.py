@@ -27,6 +27,7 @@ class ListInstructions:
         self.size = 0
         self.arduino = ArduinoSerial.ArduinoSerial()
 
+
     def add(self, instruction, value):
         if self.inicio == None:
             self.inicio = NodoInstructions(instruction, value)
@@ -81,8 +82,9 @@ class ListInstructions:
 
                 self.arduino.StartExecite()
 
-            time.sleep(0.5)
+            time.sleep(1)
             aux = aux.getSiguiente()
+
 
         self.arduino.StartExecute()
         self.deleteAll()
