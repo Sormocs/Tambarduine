@@ -169,14 +169,15 @@ class statement_set():
     def GetSentence(self):
         return self.sentence
 
-    def Execute(self, vars):
-        value = self.sentence.Execute(vars)
+    def Execute(self, vars,location):
+        self.location = location
+        value = self.sentence.Execute(vars,location)
         if (value == "Error"):
             return "Error"
         elif (self.sentence.GetType() == "operation"):
             var = Var(self.var, value, "int")
             return var
-        elif (self.sentence.GetType() == "function"):  # CAMBIAR POR ALGO QUE DETECTE LAS FUNCIONES
+        elif (self.sentence.GetType() == "function"):
             return "Error"
         elif (self.sentence.GetType() == "str"):
             var = Var(self.var, value, "str")
@@ -217,75 +218,70 @@ class statement_for():
         if self.location.GetName == "@Principal":
             global_vars.append(temp_var)
         else:
-            self.location.GetVars.append(temp_var)
-        for i in range(0, self.max):
+            self.location.GetVars().append(temp_var)
+        for i in range(0, self.max, self.step_num):
             temp_var.SetValue(i)
-            if skip == 0:
-                skip = self.step_num
-                temp = self.block
-                temp2 = None
-                while (temp != None):
-                    if (type(temp) != YaccSymbol):
-                        if (len(temp) > 1):
-                            temp2 = temp[0].value
+            temp = self.block
+            temp2 = None
+            while (temp != None):
+                if (type(temp) != YaccSymbol):
+                    if (len(temp) > 1):
+                        temp2 = temp[0].value
 
-                        else:
-                            temp2 = temp[0].value
                     else:
-                        temp2 = temp.value
-                    # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
-                    if (temp2.GetType() == "set"):
+                        temp2 = temp[0].value
+                else:
+                    temp2 = temp.value
+                # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+                if (temp2.GetType() == "set"):
 
-                        new_var = temp2.GetAction().Execute(self.location.GetVars())
-                        if new_var != "Error":
+                    new_var = temp2.GetAction().Execute(self.location.GetVars())
+                    if new_var != "Error":
 
-                            if (self.location.GetName() == "@Principal"):
-                                global_vars.append(new_var)
-                            else:
-                                self.vars.append(new_var)
-
+                        if (self.location.GetName() == "@Principal"):
+                            global_vars.append(new_var)
                         else:
-                            PrintText("Error en set de la funcion principal " + self.name)
-                            break
+                            self.vars.append(new_var)
 
-                    elif (temp2.GetType() == "sentence"):
-                        if temp2.GetAction().GetType() == "function":
-                            res = temp2.GetAction().Execute(self.vars)
-                            if (res == "Error"):
-                                PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
-                                break
+                    else:
+                        PrintText("Error en set de la funcion principal " + self.location.GetName())
+                        break
 
-                    elif (temp2.GetType() == "statement_if"):
-                        res = temp2.GetAction().Execute(self.vars, self)
+                elif (temp2.GetType() == "sentence"):
+                    if temp2.GetAction().GetType() == "function":
+                        res = temp2.GetAction().Execute(self.vars,self.location)
                         if (res == "Error"):
-                            PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                            PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
                             break
 
-                    elif (temp2.GetType() == "statement_for"):
-                        res = res = temp2.GetAction().Execute(self.vars, self)
-                        if(res == "Error"):
-                            PrintText("Error en statement for en linea" + str(temp2.GetAction().GetLine()))
+                elif (temp2.GetType() == "statement_if"):
+                    res = temp2.GetAction().Execute(self.vars, self.location)
+                    if (res == "Error"):
+                        PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                        break
 
-                    elif (temp2.GetType() == "encaso"):
-                        pass
+                elif (temp2.GetType() == "statement_for"):
+                    res = res = temp2.GetAction().Execute(self.vars, self)
+                    if(res == "Error"):
+                        PrintText("Error en statement for en linea" + str(temp2.GetAction().GetLine()))
 
-                    elif (temp2.GetType() == "print"):
-                        res = temp2.GetAction().Execute(self.vars)
-                        if res == "Error":
-                            PrintText("Error en print en " + str(temp2.GetAction().GetLine()))
-                            break
+                elif (temp2.GetType() == "encaso"):
+                    pass
 
-                    elif (temp2.GetType() == "def"):
-                        PrintText("Error: def dentro de for")
-                        return "Error"
+                elif (temp2.GetType() == "print"):
+                    res = temp2.GetAction().Execute(self.vars, self.location)
+                    if res == "Error":
+                        PrintText("Error en print en " + str(temp2.GetAction().GetLine()))
+                        break
 
-                    if (type(temp) == YaccSymbol):  # al final
-                        temp = None
-                    else:
-                        temp = temp[1].value
-            else:
-                skip -= 1
+                elif (temp2.GetType() == "def"):
+                    PrintText("Error: def dentro de for")
+                    return "Error"
 
+                if (type(temp) == YaccSymbol):  # al final
+                    temp = None
+                else:
+                    temp = temp[1].value
 
 
 class statement_if():
@@ -305,17 +301,17 @@ class statement_if():
     def Execute(self, vars, location):
         self.location = location
         self.vars = vars
-        print(self.relation)
         if self.relation.GetType() == "relation":
 
-            flag = self.relation.Execute(self.vars)
+            flag = self.relation.Execute(self.vars,location)
+            print(flag)
             if flag == "Error":
                 PrintText("Error en la condicion del if " + self.block.GetAction().GetLine())
                 return "Error"
             else:
                 if not self.isElse:
                     # CODIGO SIN ELSE
-                    if self.relation.Execute(vars):
+                    if self.relation.Execute(vars,location):
                         temp = self.block
                         temp2 = None
                         while (temp != None):
@@ -330,7 +326,7 @@ class statement_if():
                             # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
                             if (temp2.GetType() == "set"):
 
-                                new_var = temp2.GetAction().Execute(self.vars)
+                                new_var = temp2.GetAction().Execute(self.vars,self.location)
                                 if new_var != "Error":
 
                                     if (self.location.GetName() == "@Principal"):
@@ -339,8 +335,7 @@ class statement_if():
                                         self.location.GetVars().append(new_var)
 
                                 else:
-                                    PrintText(
-                                        "Error en la ejecucion de la funcion " + self.location.GetName() + " en un set")
+                                    PrintText("Error en la ejecucion de la funcion " + self.location.GetName() + " en un set")
                                     break
 
                             elif (temp2.GetType() == "sentence"):
@@ -367,7 +362,7 @@ class statement_if():
                                 pass
 
                             elif (temp2.GetType() == "print"):
-                                temp2.GetAction().Execute(self.vars)
+                                temp2.GetAction().Execute(self.vars,self.location)
 
                             elif (temp2.GetType() == "def"):
                                 return "Error"
@@ -398,7 +393,7 @@ class statement_if():
                         # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
                         if (temp2.GetType() == "set"):
 
-                            new_var = temp2.GetAction().Execute(self.vars)
+                            new_var = temp2.GetAction().Execute(self.vars,self.location)
                             if new_var != "Error":
 
                                 if (self.location.GetName() == "@Principal"):
@@ -407,15 +402,14 @@ class statement_if():
                                     self.vars.append(new_var)
 
                             else:
-                                PrintText("Error en la ejecucion de la funcion " + self.name)
+                                PrintText("Error en la ejecucion de la funcion " + self.location.GetName() + " en un set")
                                 break
 
                         elif (temp2.GetType() == "sentence"):
                             if temp2.GetAction().GetType() == "function":
                                 res = temp2.GetAction().Execute(self.vars)
                                 if (res == "Error"):
-                                    PrintText(
-                                        "Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                                    PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
                                     break
 
                         elif (temp2.GetType() == "statement_if"):
@@ -425,16 +419,20 @@ class statement_if():
                                 break
 
                         elif (temp2.GetType() == "statement_for"):
-                            pass
+                            res = temp2.GetAction().Execute(self.vars, self)
+                            if (res == "Error"):
+                                PrintText("Error en statement for en " + self.name)
+                                break
 
                         elif (temp2.GetType() == "encaso"):
                             pass
 
                         elif (temp2.GetType() == "print"):
-                            temp2.GetAction().Execute(self.vars)
+                            temp2.GetAction().Execute(self.vars,self.location)
 
                         elif (temp2.GetType() == "def"):
-                            pass
+                            PrintText("Error: funcion dentro de funcion")
+                            break
 
                         if (type(temp) == YaccSymbol):  # al final
                             temp = None
@@ -443,18 +441,6 @@ class statement_if():
 
         else:
             return "Error"
-
-
-class statement_EnCaso():
-    def __init__(self, name):
-        self.name = name
-        self.type = "state"
-
-    def GetType(self):
-        return self.type
-
-    def Execute(self):
-        pass
 
 
 class statement_DEF():
@@ -492,7 +478,7 @@ class statement_DEF():
             # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
             if (temp2.GetType() == "set"):
 
-                new_var = temp2.GetAction().Execute(self.vars)
+                new_var = temp2.GetAction().Execute(self.vars,self)
                 if new_var != "Error":
 
                     if (self.name == "@Principal"):
@@ -506,31 +492,43 @@ class statement_DEF():
 
             elif (temp2.GetType() == "sentence"):
                 if temp2.GetAction().GetType() == "function":
-                    res = temp2.GetAction().Execute(self.vars)
+                    res = temp2.GetAction().Execute(self.vars,self)
                     if (res == "Error"):
                         PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
                         break
 
             elif (temp2.GetType() == "statement_if"):
+                print("llama a statement if")
                 res = temp2.GetAction().Execute(self.vars, self)
                 if (res == "Error"):
-                    PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                    PrintText("Error en statement if en "+self.name)
                     break
 
             elif (temp2.GetType() == "statement_for"):
-                pass
-
-            elif (temp2.GetType() == "encaso"):
-                pass
-
-            elif (temp2.GetType() == "print"):
-                res = temp2.GetAction().Execute(self.vars)
-                if res == "Error":
-                    PrintText("Error en print en " + str(temp2.GetAction().GetLine()))
+                res = temp2.GetAction().Execute(self.vars, self)
+                if (res == "Error"):
+                    PrintText("Error en statement for en "+self.name)
                     break
 
+
+            elif (temp2.GetType() == "encaso"):
+
+                res = temp2.Execute(self.vars, self)
+                if (res == "Error"):
+                    PrintText("Error en statement encaso en " + self.name)
+                    return "Error"
+
+
+            elif (temp2.GetType() == "print"):
+
+                res = temp2.GetAction().Execute(self.vars, self)
+                if res == "Error":
+                    print("Error en print en " + str(temp2.GetAction().GetLine()))
+                    return "Error"
+
             elif (temp2.GetType() == "def"):
-                pass
+                PrintText("Error: funcion dentro de funcion")
+                return "Error"
 
             if (type(temp) == YaccSymbol):  # al final
                 temp = None
@@ -549,7 +547,9 @@ class PrintConsole():
         self.id = id.replace("#id", "")
         self.data_type = data_type
 
-    def Execute(self, vars):
+    def Execute(self, vars,location):
+        print("Print llamado con valor ",self.sentence)
+        self.location = location
         if self.id == "println!":
             if self.data_type == "var":
                 if self.vars != []:
@@ -569,8 +569,8 @@ class PrintConsole():
             else:
                 self.vars = vars
                 if (self.sentence.GetType() != "function"):
-                    print(self.sentence.GetValue())
-                    self.text = str(self.sentence.Execute(self.vars))
+                    #print(self.sentence.GetValue())
+                    self.text = str(self.sentence.Execute(self.vars,self.location))
                     self.Insert()
                     return "Exito"
                 else:
@@ -605,8 +605,8 @@ class sentence():
     def GetLine(self):
         return self.line
 
-    def Execute(self, vars):
-
+    def Execute(self, vars,location):
+        self.location = location
         self.vars = vars
         if (self.sentype == "str"):
 
@@ -629,6 +629,8 @@ class sentence():
             return "false"
         elif (self.sentype == "relation"):
             splited = self.value.split("$")
+            flag = self.SolveRelation(splited)
+            return flag
 
         elif self.sentype == "operation":
 
@@ -731,6 +733,7 @@ class sentence():
 
     def ReplaceVar(self, name):
         for i in self.vars:
+            var_name = i.GetName().replace("+", "")
             if i.GetName() == name:
                 return i.GetValue()
             if i.GetType() == "str":
@@ -1020,8 +1023,8 @@ class Block():
     def GetType(self):
         return self.type
 
-    def Execute(self, vars):
-        self.action.Execute(vars)
+    def Execute(self, vars, location):
+        self.action.Execute(vars,location)
 
 
 class Var():
@@ -1045,3 +1048,161 @@ class Var():
 
     def GetType(self):
         return self.type
+
+
+class CuandoStatement():
+
+    def __init__(self,relation,block):
+
+        self.relation = relation
+        self.block = block
+
+    def GetRelation(self):
+        return self.relation
+
+    def Execute(self,vars,location):
+        self.vars = vars
+        self.location = location
+        temp = self.block
+        temp2 = None
+        while (temp != None):
+            if (type(temp) != YaccSymbol):
+                if (len(temp) > 1):
+                    temp2 = temp[0].value
+
+                else:
+                    temp2 = temp[0].value
+            else:
+                temp2 = temp.value
+            # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+            if (temp2.GetType() == "set"):
+
+                PrintText("Error: No se puede ejecutar un bloque SET, linea " + str(self.location))
+                return "Error"
+
+            elif (temp2.GetType() == "sentence"):
+                if temp2.GetAction().GetType() == "function":
+                    res = temp2.GetAction().Execute(self.vars)
+                    if (res == "Error"):
+                        PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                        return "Error"
+
+            elif (temp2.GetType() == "statement_if"):
+                res = temp2.GetAction().Execute(self.vars, self)
+                if (res == "Error"):
+                    PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                    return "Error"
+
+            elif (temp2.GetType() == "statement_for"):
+                res = temp2.GetAction().Execute(self.vars, self)
+                if (res == "Error"):
+                    PrintText("Error en statement for en " + self.location.GetName())
+                    return "Error"
+
+            elif (temp2.GetType() == "encaso"):
+                res = temp2.Execute(self.vars, self.location)
+                if (res == "Error"):
+                    PrintText("Error en statement encaso en " + self.location.GetName())
+                    return "Error"
+
+            elif (temp2.GetType() == "print"):
+                res = temp2.GetAction().Execute(self.vars, self.location)
+                if res == "Error":
+                    print("Error en print en " + str(temp2.GetAction().GetLine()))
+                    return "Error"
+
+            elif (temp2.GetType() == "def"):
+                PrintText("Error: funcion dentro de funcion")
+                return "Error"
+
+
+class statement_EnCaso():
+    def __init__(self, cuandos, sino_block):
+        self.cuandos = cuandos
+        self.sino_block = sino_block
+
+    def Execute(self, vars, location):
+        self.vars = vars
+        self.location = location
+        temp = self.cuandos
+        temp2 = None
+        cuando_called = False
+        while (temp != None):
+            if (type(temp) != YaccSymbol):
+                if (len(temp) > 1):
+                    temp2 = temp[0].value
+                else:
+                    temp2 = temp[0].value
+            else:
+                temp2 = temp.value
+
+            flag = temp2.GetRelation().Execute(self.vars, self.location)
+            if (flag == "Error"):
+                return "Error"
+            else:
+                if flag:
+                    cuando_called = True
+                    res = temp2.Execute(self.vars, self.location)
+                    if (res == "Error"):
+                        PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                        return "Error"
+                    else:
+                        pass
+
+            if (type(temp) == YaccSymbol):  # al final
+                temp = None
+            else:
+                temp = temp[1].value
+
+        if not cuando_called:
+            temp = self.sino_block
+            temp2 = None
+            while (temp != None):
+                if (type(temp) != YaccSymbol):
+                    if (len(temp) > 1):
+                        temp2 = temp[0].value
+
+                    else:
+                        temp2 = temp[0].value
+                else:
+                    temp2 = temp.value
+                # COMIENZA EJECUCION DE BLOQUES SEGUN EL TIPO DE BLOQUES
+                if (temp2.GetType() == "set"):
+
+                    PrintText("Error: No se puede ejecutar un bloque SET, linea " + str(self.location))
+                    return "Error"
+
+                elif (temp2.GetType() == "sentence"):
+                    if temp2.GetAction().GetType() == "function":
+                        res = temp2.GetAction().Execute(self.vars)
+                        if (res == "Error"):
+                            PrintText("Error en la funcion introducida en linea " + str(temp2.GetAction().GetLine()))
+                            return "Error"
+
+                elif (temp2.GetType() == "statement_if"):
+                    res = temp2.GetAction().Execute(self.vars, self)
+                    if (res == "Error"):
+                        PrintText("Error en statement if en " + str(temp2.GetAction().GetLine()))
+                        return "Error"
+
+                elif (temp2.GetType() == "statement_for"):
+                    res = temp2.GetAction().Execute(self.vars, self)
+                    if (res == "Error"):
+                        PrintText("Error en statement for en " + self.location.GetName())
+                        return "Error"
+
+                elif (temp2.GetType() == "encaso"):
+                    res = temp2.Execute(self.vars, self.location)
+                    if (res == "Error"):
+                        PrintText("Error en statement encaso en " + self.location.GetName())
+                        return "Error"
+
+                elif (temp2.GetType() == "print"):
+                    res = temp2.GetAction().Execute(self.vars, self.location)
+                    if res == "Error":
+                        print("Error en print en " + str(temp2.GetAction().GetLine()))
+                        return "Error"
+
+                elif (temp2.GetType() == "def"):
+                    PrintText("Error: funcion dentro de funcion")
+                    return "Error"

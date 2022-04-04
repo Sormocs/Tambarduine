@@ -28,24 +28,36 @@ def p_statement_set(p):
 def p_statement_for(p):
      '''statement : FOR VAR TO NUMBER STEP NUMBER LBRACK blockList RBRACK SEMICOLOMN'''
      print("statement for")
-     p[0] = [semantic.statement_for(p[2],p[4],p[6]),p[8]] + ["statement_for"]
+     p[0] = [semantic.statement_for(p[2],p[4],p[6],p[8])] + ["statement_for"]
 
 
 def p_statement_if(p):
     '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK SEMICOLOMN'''
-    print("statement if")
     p[0] = [semantic.statement_if(p[3][0],p[6],"none",False)] + ["statement_if"]
 
 def p_statement_if2(p):
     '''statement : IF LPAR sentence RPAR LBRACK blockList RBRACK ELSE LBRACK blockList RBRACK SEMICOLOMN'''
-    print("statement if")
     p[0] = [semantic.statement_if(p[3][0],p[6],p[10],True)] + ["statement_if"]
 
 def p_statement_EnCaso(p):
-    '''statement : ENCASO CUANDO relation ENTONS LBRACK sentence RBRACK SINO LBRACK sentence RBRACK FINENCASO SEMICOLOMN
-     | ENCASO factor CUANDO relation ENTONS LBRACK sentence RBRACK SINO LBRACK sentence RBRACK FINENCASO SEMICOLOMN'''
-    print("statement 5")
-    p[0] = ["objeto en caso"] + ["encaso"]
+    '''statement : ENCASO cuandoList SINO LBRACK blockList RBRACK FINENCASO SEMICOLOMN'''
+    p[0] = [semantic.statement_EnCaso(p[2],p[5])] + ["encaso"]
+
+def p_statement_EnCaso2(p):
+    '''statement : ENCASO factor CUANDO relation ENTONS LBRACK sentence RBRACK SINO LBRACK sentence RBRACK FINENCASO SEMICOLOMN'''
+    p[0] = "AAAAAAHHHHHHHHHHHHHHHHHH"
+
+def p_cuando(p):
+    '''cuando : CUANDO relation ENTONS LBRACK blockList RBRACK'''
+    p[0] = semantic.CuandoStatement(p[2],p[5])
+
+def p_cuandoList(p):
+    '''cuandoList : cuando
+    | cuando cuandoList'''
+    if len(p.slice) > 2:
+        p[0] = (p.slice[1],p.slice[2])
+    else:
+        p[0] = (p.slice[1])
 
 def p_statement_DEF(p):
     '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN '''
@@ -59,7 +71,7 @@ def p_statement_print(p):
 def p_statement_print2(p):
     '''statement : ID LPAR VAR RPAR SEMICOLOMN'''
     print("statement print2")
-    p[0] = [semantic.PrintConsole(p[1],p[3][0],"var")] + ["print"]
+    p[0] = [semantic.PrintConsole(p[1],p[3],"var")] + ["print"]
 
 
 def p_function(p):
@@ -260,13 +272,16 @@ def p_sentence(p):
     split = p[1].split("#")
     line = str(p.lineno)
     #print(split)
-    #print(p.__dict__)
-    if "#str" in p[1]:
-        string = p[1].replace("#str","")
-        split = string.split("#")
-        p[0] = [semantic.sentence(split[0], "str", p.stack[-1].lineno)] + ["sentence"]
-    else:
-        p[0] = [semantic.sentence(split[0],split[-1],p.stack[-1].lineno)] + ["sentence"]
+    try:
+        if "#str" in p[1]:
+            string = p[1].replace("#str","")
+            split = string.split("#")
+            p[0] = [semantic.sentence(split[0], "str", p.stack[-2].lineno)] + ["sentence"]
+        else:
+            print(p.__dict__)
+            p[0] = [semantic.sentence(split[0],split[-1],p.stack[-2].lineno)] + ["sentence"]
+    except(AttributeError):
+        p[0] = [semantic.sentence(split[0], split[-1], "linea desconocida")] + ["sentence"]
 
 def p_block(p):
     '''block : statement
