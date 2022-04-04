@@ -370,8 +370,9 @@ private:
         horiServo.attach(horiServoPin);
         pinzaServo.attach(pinzaServoPin);
         ejePinzaServo.attach(ejePinzaServoPin);
-        Restablecer();
-        Percutor(2);
+        pinMode(3 , OUTPUT);
+        digitalWrite(3 , LOW); 
+
     }
 
     /*
@@ -431,6 +432,10 @@ private:
                     SetTempo(valueAction);
                     metronomo = true;
                     break;
+                case 'S':
+                    configurado = true;
+                    digitalWrite(3 , HIGH); 
+                    break;
             }
         }
 
@@ -442,7 +447,7 @@ private:
     void Bucle(){
         if (!configurado){
             Restablecer();
-            //Config();
+            Config();
             //Vibratto(5);
             //Abanico(1);
             //Vertical(1);
@@ -452,6 +457,7 @@ private:
         } else if (metronomo){
             while (acciones.Longitud() > 0){
                 accion = acciones.PrimeroYEliminar();
+
                 switch (accion->movimiento){
                     case 'A':
                         Abanico(accion->direccion);
@@ -469,6 +475,8 @@ private:
                         Vibratto(accion->direccion);
                         break;
                 }
+                configurado = false;
+                digitalWrite(3 , LOW); 
             }
         } else {
 

@@ -12,8 +12,8 @@ class ArduinoSerial:
 
         self.tempo = 0
         self.canSend = False
-        self.arduino = serial.Serial('COM5', 9600) #Arduino Mega : self.arduino = serial.Serial('COM4', 9600)
-        time.sleep(2)
+        self.arduino = serial.Serial('COM4', 9600)
+        time.sleep(0.5)
 
     def send(self, message):
 
@@ -24,7 +24,9 @@ class ArduinoSerial:
         """
 
         if self.canSend:
+            print(message)
             self.arduino.write(message.encode())
+
 
     def receive(self):
 
@@ -35,7 +37,6 @@ class ArduinoSerial:
 
         return self.arduino.readline().decode()
 
-        return self.arduino.readline()
 
     def close(self):
 
@@ -123,3 +124,24 @@ class ArduinoSerial:
         self.canSend = True
         self.tempo = tempo
         self.send("M#" + str(tempo)) #Tempo#0
+
+    def StartExecute(self):
+
+        """
+        Send a message to the Arduino to start the execution
+        :return: None
+        """
+
+        self.send("S#1") #Start#0
+
+    def DisableMetronomo(self):
+
+        """
+        Send a message to the Arduino to stop the execution
+        :return: None
+        """
+
+        self.canSend = False
+
+
+

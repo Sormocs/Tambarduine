@@ -1,4 +1,5 @@
 from COMP.ply.yacc import YaccSymbol
+from COMP import ListInstructions
 
 nums = "0123456789"
 prim_symbols = ["*", "%", "//", "/"]
@@ -11,6 +12,7 @@ metronome = False
 
 box = None
 
+instruccions = None
 
 def FinalOp(op):
     i = 0
@@ -98,43 +100,34 @@ def FormOp(nums, symbs):
         i += 1
     return res
 
+def CreateListInstruccions():
+    global instruccions
+    instruccions = ListInstructions.ListInstructions()
+
+def StartArduinoExecution():
+
+    instruccions.execute()
 
 def Funciones(name, param):
     if name == "Percutor":
-        if param == "A":
-            print("Funcion percutor Arriba")
-        elif param == "B":
-            print("Funcion percutor Abajo")
-        elif param == "D":
-            print("Funcion percutor Derecha")
-        elif param == "I":
-            print("Funcion percutor Izquierda")
-        elif param == "DI":
-            print("Funcion percutor Derecha e Izquierda")
-        elif param == "AB":
-            print("Funcion percutor Arriba y Abajo")
-        else:
-            print("Parametro incorrecto")
+
+        instruccions.AddInstruccion("Percutor", param)
 
     elif name == "Abanico":
-        if param == "A":
-            print("Funcion Abanico Arriba")
-        elif param == "B":
-            print("Funcion Abanico Abajo")
-        else:
-            print("Parametro incorrecto")
+
+        instruccions.AddInstruccion("Abanico", param)
 
     elif name == "Vertical":
-        if param == "D":
-            print("Funcion Abanico Arriba")
-        elif param == "I":
-            print("Funcion Abanico Abajo")
-        else:
-            print("Parametro incorrecto")
+
+        instruccions.AddInstruccion("Vertical", param)
+
     elif name == "Golpe":
-        print("Funcion Golpe Llamada")
+
+        instruccions.AddInstruccion("Golpe", param)
+
     elif name == "Vibrato":
-        print("Funcion Vibrato Llamada" + str(param))
+
+        instruccions.AddInstruccion("Vibrato", param)
 
 
 def Metronomo(param, speed):
@@ -142,15 +135,19 @@ def Metronomo(param, speed):
     if param == "A":
         if metronome:
             PrintText("Metronomo Ya esta activado")
+            instruccions.AddInstruccion("Metronomo", speed)
         else:
             metronome = True
+            instruccions.AddInstruccion("Metronomo", speed)
             PrintText("Se ha activado el metronomo")
     else:
         if metronome:
             metronome = False
             PrintText("Se ha desactivado el metronomo")
+            instruccions.metronoOff()
         else:
             PrintText("Metronomo Ya esta desactivado")
+            instruccions.metronoOff()
 
 
 def PrintText(text):
