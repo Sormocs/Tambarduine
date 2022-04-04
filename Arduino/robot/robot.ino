@@ -8,7 +8,7 @@
 #define EJE_PINZA_VERTICAL 180
 #define EJE_PINZA_NEUTRAL 125
 
-#define HORIZONTAL_NEUTRAL 95
+#define HORIZONTAL_NEUTRAL 85
 #define VERTICAL_NEUTRAL 147
 
 #define buzzFrec1 1600
@@ -139,14 +139,12 @@ private:
      * @param int
      */
     void Abanico(int direccion){
-        MetronomoEspec(0);
-        vertServo.write(VERTICAL_NEUTRAL+15*pow(-1,direccion-1));
-        delay(500);
+        vertServo.write(VERTICAL_NEUTRAL+25*pow(-1,direccion-1));
+        delay(300);
         vertServo.write(VERTICAL_NEUTRAL);
-        delay(500);
-        if (tempo > 1){
-            MetronomoEspec(tempo*1000-1000);
-        }
+        delay(700);
+        MetronomoEspec(tempo*1000-1000);
+
     }
 
     /*
@@ -154,11 +152,11 @@ private:
      * @param int
      */
     void Vertical(int direccion){
-        MetronomoEspec(0);
         horiServo.write(HORIZONTAL_NEUTRAL+30*pow(-1,direccion-1));
         delay(500);
         horiServo.write(HORIZONTAL_NEUTRAL);
         delay(500);
+        MetronomoEspec(tempo*1000 - 1000);
     }
 
     /*
@@ -244,9 +242,7 @@ private:
         }
 
         // Hace sonar el metrónomo en el momento adecuado
-        if (tempo > 1) {
-            MetronomoEspec(tempo*1000-1000);
-        }
+        MetronomoEspec(tempo*1000-1000);
 
     }
 
@@ -256,16 +252,18 @@ private:
     void Golpe(){
         pinzaServo.write(PINZA_CERRADA);                //Cierra la pinza
         ejePinzaServo.write(EJE_PINZA_HORIZONTAL);      //Coloca la pinza en horizontal
-        delay(300);
+        delay(400);
         vertServo.write(VERTICAL_NEUTRAL-50);           //Inclina el pandero hacia abajo
         delay(200);
         vertServo.write(VERTICAL_NEUTRAL);              //Inclina el pandero a la posición neutral
+        delay(100);
         pinzaServo.write(PINZA_NEUTRAL);                //Coloca la pinza en posición neutral
+        delay(100);
         ejePinzaServo.write(EJE_PINZA_NEUTRAL);         //Coloca la pinza en diagonal
-        delay(500);
-        if (tempo > 1) {
-            MetronomoEspec(tempo*1000-1000);
-        }
+        delay(100);
+
+        MetronomoEspec(tempo*1000-1000);
+
     }
 
     /*
@@ -274,22 +272,22 @@ private:
      */
     void Vibratto(int movimientos){
 
-        for (int i = 1; i < movimientos; i++) {
+        for (int i = 1; i < movimientos+1; i++) {
             if (i % 2 == 0) {
-                horiServo.write(HORIZONTAL_NEUTRAL-10);
+                horiServo.write(HORIZONTAL_NEUTRAL-20);
             } else {
-                horiServo.write(HORIZONTAL_NEUTRAL+10);
+                horiServo.write(HORIZONTAL_NEUTRAL+20);
             }
             delay(100);
-            if (i % 10 == 0) {
+            if (i % (10*tempo) == 0) {
                 MetronomoEspec(0);
             }
         }
 
         horiServo.write(HORIZONTAL_NEUTRAL);
 
-        if (movimientos % 10 != 0) {
-            MetronomoEspec(movimientos % 10 * 100);
+        if (movimientos % (tempo*10) != 0) {
+            MetronomoEspec(tempo*1000 - movimientos % (10*tempo) * 100);
         }
 
 
@@ -320,10 +318,10 @@ private:
     void MetronomoEspec(int delayTime){
         delay(delayTime);
         if (tempoNum == 1){
-            tone(buzzPin, buzzFrec1, 30);
+            tone(buzzPin, buzzFrec1, 50);
 
         } else {
-            tone(buzzPin, buzzFrec2, 30);
+            tone(buzzPin, buzzFrec2, 50);
         }
         tempoNum++;
         if (tempoNum > metrica){
@@ -474,9 +472,8 @@ private:
                         Vibratto(accion->direccion);
                         break;
                 }
-                //digitalWrite(3 , LOW); 
                 configurado = false;
-                
+                digitalWrite(3 , LOW); 
             }
         } else {
 
