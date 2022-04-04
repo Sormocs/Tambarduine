@@ -189,14 +189,6 @@ class statement_set():
             return "Error"
 
 
-class statement_while():
-
-    def __init__(self, condition, block):
-        self.type = "while"
-        self.condition = condition
-        self.block = block
-
-
 class statement_for():
     def __init__(self, var, max, step_num, block):
         self.var = var
@@ -277,6 +269,12 @@ class statement_for():
                 elif (temp2.GetType() == "def"):
                     PrintText("Error: def dentro de for")
                     return "Error"
+
+                elif (temp2.GetType() == "special_set"):
+                    res = temp2.Execute(self.vars, self.location)
+                    if (res == "Error"):
+                        PrintText("Error en statement set en " + self.location.GetName())
+                        return "Error"
 
                 if (type(temp) == YaccSymbol):  # al final
                     temp = None
@@ -362,10 +360,19 @@ class statement_if():
                                 pass
 
                             elif (temp2.GetType() == "print"):
-                                temp2.GetAction().Execute(self.vars,self.location)
+                                res = temp2.GetAction().Execute(self.vars,self.location)
+                                if (res == "Error"):
+                                    PrintText("Error en la impresion de linea " + str(temp2.GetAction().GetLine()))
 
                             elif (temp2.GetType() == "def"):
+                                PrintText("Error en la definicion de funcion en linea " + str(temp2.GetAction().GetLine()))
                                 return "Error"
+
+                            elif (temp2.GetType() == "special_set"):
+                                res = temp2.Execute(self.vars, self.location)
+                                if (res == "Error"):
+                                    PrintText("Error en statement set en " + self.location.GetName())
+                                    return "Error"
 
                             if (type(temp) == YaccSymbol):  # al final
                                 temp = None
@@ -433,6 +440,12 @@ class statement_if():
                         elif (temp2.GetType() == "def"):
                             PrintText("Error: funcion dentro de funcion")
                             break
+
+                        elif (temp2.GetType() == "special_set"):
+                            res = temp2.Execute(self.vars, self.location)
+                            if (res == "Error"):
+                                PrintText("Error en statement set en " + self.location.GetName())
+                                return "Error"
 
                         if (type(temp) == YaccSymbol):  # al final
                             temp = None
@@ -516,7 +529,7 @@ class statement_DEF():
                 res = temp2.Execute(self.vars, self)
                 if (res == "Error"):
                     PrintText("Error en statement encaso en " + self.name)
-                    return "Error"
+                    break
 
 
             elif (temp2.GetType() == "print"):
@@ -529,6 +542,12 @@ class statement_DEF():
             elif (temp2.GetType() == "def"):
                 PrintText("Error: funcion dentro de funcion")
                 return "Error"
+
+            elif (temp2.GetType() == "special_set"):
+                res = temp2.Execute(self.vars, self)
+                if (res == "Error"):
+                    PrintText("Error en statement set en " + self.GetName())
+                    return "Error"
 
             if (type(temp) == YaccSymbol):  # al final
                 temp = None
@@ -675,18 +694,21 @@ class sentence():
 
                         return "Exito"
                     except (ValueError):
+                        PrintText("Error: Numero de vibrato no valido")
                         return "Error"
                 elif split[0] == "Vertical":
                     if (split[1] == "D" or split[1] == "I"):
                         Funciones(split[0], split[1])
                         return "Exito"
                     else:
+                        PrintText("Error: Direccion de vertical no valida")
                         return "Error"
                 elif split[0] == "Abanico":
                     if (split[1] == "A" or split[1] == "B"):
                         Funciones(split[0], split[1])
                         return "Exito"
                     else:
+                        PrintText("Error: Direccion de abanico no valida")
                         return "Error"
                 elif split[0] == "Percutor":
                     if (split[1] == "D" or split[1] == "I" or split[1] == "A" or split[1] == "B" or split[1] == "AB" or
@@ -694,6 +716,7 @@ class sentence():
                         Funciones(split[0], split[1])
                         return "Exito"
                     else:
+                        PrintText("Error: Direccion de percutor no valida")
                         return "Error"
                 else:
                     return "Error"
@@ -705,10 +728,13 @@ class sentence():
                         Metronomo(split[1], int(num))
                         return "Exito"
                     except (ValueError):
+                        PrintText("Error: Numero de metronomo no valido")
                         return "Error"
                 else:
+                    PrintText("Error: Parametro de metronomo no valida")
                     return "Error"
             else:
+                PrintText("Error: Funcion introducida no existe")
                 return "Error"
         else:
             PrintText("Error: Sentencia" + self.sentype + "no reconocida")
@@ -1034,6 +1060,9 @@ class Var():
         self.value = value
         self.type = type
 
+    def SetType(self, type):
+        self.type = type
+
     def SetName(self, name):
         self.name = name
 
@@ -1113,6 +1142,10 @@ class CuandoStatement():
 
             elif (temp2.GetType() == "def"):
                 PrintText("Error: funcion dentro de funcion")
+                return "Error"
+
+            elif (temp2.GetType() == "special_set"):
+                PrintText("Error: No se puede ejecutar un bloque SET")
                 return "Error"
 
 
@@ -1206,3 +1239,75 @@ class statement_EnCaso():
                 elif (temp2.GetType() == "def"):
                     PrintText("Error: funcion dentro de funcion")
                     return "Error"
+
+                elif (temp2.GetType() == "special_set"):
+                    res = temp2.Execute(self.vars, self.location)
+                    if (res == "Error"):
+                        PrintText("Error en statement set en " + self.location.GetName())
+                        return "Error"
+
+class DiffSet():
+
+    def __init__(self, setstr, line,set_type):
+
+        self.setstr = setstr
+        self.set_type = set_type
+        self.line = line
+
+    def Execute(self, vars, location):
+        self.vars = vars
+        self.location = location
+        print(self.set_type)
+        if self.set_type == "special_set":
+            print("special_set")
+            splited = self.setstr.split("$")
+            var1 = self.GetVar(splited[0])
+            var2 = self.GetVar(splited[1])
+            if (var1 != "Error" and var2 != "Error"):
+                if (var1.GetType() == "int" and var2.GetType() == "int" and var1 == var2):
+                    print(var1.GetValue())
+                    neg = var1.GetValue() * (-1)
+                    var1.SetValue(neg)
+                    print(var1.GetValue())
+                    return "Exito"
+            else:
+                PrintText("Error en set, variable no encontrada o invalida en linea " + str(self.line))
+                return "Error"
+        else:
+            splited = self.setstr.split("$")
+            var1 = self.GetVar(splited[0])
+            if (var1 != "Error"):
+                print(splited[1])
+                if (splited[1] == "T"):
+                    var1.SetValue("true")
+                    var1.SetType("bool")
+                elif (splited[1] == "F"):
+                    var1.SetValue("false")
+                    var1.SetType("bool")
+                elif (splited[1] == "Neg"):
+                    if var1.GetType() == "bool":
+                        if var1.GetValue() == "true":
+                            var1.SetValue("false")
+                        else:
+                            var1.SetValue("true")
+                    else:
+                        PrintText("Error en set, variable no es booleana en linea " + str(self.line))
+                        return "Error"
+                else:
+                    PrintText("Error en set, parametro invalido en linea en linea " + str(self.line))
+                    return "Error"
+            else:
+                PrintText("Error en set, variable no encontrada o invalida")
+                return "Error"
+
+    def GetVar(self,name):
+        if self.vars != []:
+            for i in self.vars:
+                if i.GetName() == name:
+                    return i
+        if global_vars != []:
+            for i in global_vars:
+                if i.GetName() == name:
+                    return i
+        PrintText("Error: Variable not found en linea " + str(self.line))
+        return "Error"

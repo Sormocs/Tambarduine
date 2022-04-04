@@ -21,8 +21,7 @@ precedence = (
 def p_statement_set(p):
     '''statement : SET VAR COMMA sentence SEMICOLOMN'''
     p[0] = [semantic.statement_set(p[2],p[4][0])] +["set"]
-    #print("Valor: "+p[0][0].GetSentence().GetValue())
-    #print("Tipo: " + p[0][0].GetSentence().GetType())
+
 #
 #
 def p_statement_for(p):
@@ -70,7 +69,6 @@ def p_statement_print(p):
 
 def p_statement_print2(p):
     '''statement : ID LPAR VAR RPAR SEMICOLOMN'''
-    print("statement print2")
     p[0] = [semantic.PrintConsole(p[1],p[3],"var")] + ["print"]
 
 
@@ -278,10 +276,19 @@ def p_sentence(p):
             split = string.split("#")
             p[0] = [semantic.sentence(split[0], "str", p.stack[-2].lineno)] + ["sentence"]
         else:
-            print(p.__dict__)
+            #print(p.__dict__)
             p[0] = [semantic.sentence(split[0],split[-1],p.stack[-2].lineno)] + ["sentence"]
     except(AttributeError):
-        p[0] = [semantic.sentence(split[0], split[-1], "linea desconocida")] + ["sentence"]
+        p[0] = [semantic.sentence(split[0], split[-1], "$desconocida$")] + ["sentence"]
+
+def p_special_set(p):
+    '''statement : SET VAR COMMA MINUS VAR SEMICOLOMN'''
+    #print(p.__dict__)
+    p[0] = [semantic.DiffSet(str(p[2]) + "$" + str(p[5]),p.slice[2].lineno, "special_set")]+ ["special_set"]
+
+def p_special_set2(p):
+    '''statement : SET VAR POINT ID SEMICOLOMN'''
+    p[0] = [semantic.DiffSet(str(p[2]) + "$" + str(p[4]), p.slice[2].lineno, "special_set2")]+ ["special_set"]
 
 def p_block(p):
     '''block : statement
@@ -323,6 +330,9 @@ def Parsear(cadena,box):
     semantic.global_vars = []
     lex.analyzer.lineno = 0
     semantic.box = box
+    box.configure(state="normal")
+    box.delete("1.0", "end")
+    box.configure(state="disabled")
     #lex.TokenGen(cadena)
     result = parser.parse(cadena)
     detected = False
@@ -331,9 +341,9 @@ def Parsear(cadena,box):
         for i in semantic.methods:
             if i.GetName() == "@Principal":
                 detected = True
-                semantic.CreateListInstruccions()
+                #semantic.CreateListInstruccions()
                 i.Execute()
-                semantic.StartArduinoExecution()
+                #semantic.StartArduinoExecution()
                 #INSTRUCCION semantic.FUNCION()
                 break
         if not detected:
