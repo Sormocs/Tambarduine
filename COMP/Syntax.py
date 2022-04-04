@@ -312,10 +312,13 @@ def Parsear(cadena,box):
     result = parser.parse(cadena)
     detected = False
     if semantic.methods != []:
+
         for i in semantic.methods:
             if i.GetName() == "@Principal":
                 detected = True
+                semantic.CreateListInstruccions()
                 i.Execute()
+                semantic.StartArduinoExecution()
                 #INSTRUCCION semantic.FUNCION()
                 break
         if not detected:
