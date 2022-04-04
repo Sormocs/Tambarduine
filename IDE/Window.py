@@ -389,7 +389,7 @@ class Window:
 
         code = self.GetText()
         #Lexer.TokenGen(code)
-        Syntax.Parsear(code,self.outputBox)
+        Syntax.Parsear(code,self.outputBox,False)
 
 
     def Run(self):
@@ -398,8 +398,9 @@ class Window:
         Method that runs the code
         :return:
         """
-
-        pass
+        code = self.GetText()
+        # Lexer.TokenGen(code)
+        Syntax.Parsear(code, self.outputBox,True)
 
     def SendOutput(self, text):
 

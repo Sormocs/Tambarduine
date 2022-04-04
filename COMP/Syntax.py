@@ -6,10 +6,10 @@ import COMP.SemanticAn as semantic
 tokens = lex.tokens
 
 precedence = (
-    ('right','VAR','FOR','IF','WHILE','ELSE'),
+    ('right','VAR','FOR','IF','ELSE'),
     ('right','SET','DEF','TO','CUANDO','SINO'),
     ('left','DIFF'),
-    ('left','GREATER','SMALLER','SAME','GREATEQ','SMALLEQ','EQUALS'),
+    ('left','GREATER','SMALLER','GREATEQ','SMALLEQ','EQUALS'),
     ('left','PLUS','MINUS'),
     ('left','POWER','TIMES','FULLDIV','DIV','MODULE'),
     ('left','LBRACK','RBRACK'),
@@ -47,7 +47,7 @@ def p_statement_EnCaso2(p):
     p[0] = "AAAAAAHHHHHHHHHHHHHHHHHH"
 
 def p_cuando(p):
-    '''cuando : CUANDO relation ENTONS LBRACK blockList RBRACK'''
+    '''cuando : CUANDO sentence ENTONS LBRACK blockList RBRACK'''
     p[0] = semantic.CuandoStatement(p[2],p[5])
 
 def p_cuandoList(p):
@@ -59,8 +59,47 @@ def p_cuandoList(p):
         p[0] = (p.slice[1])
 
 def p_statement_DEF(p):
-    '''statement : DEF var LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN '''
+    '''statement : DEF VAR LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN statementList
+    | DEF VAR LPAR RPAR LBRACK blockList RBRACK SEMICOLOMN'''
     p[0] = [semantic.statement_DEF(p[2].replace('#var',''),p[6])] + ["def"]
+
+def p_statement_DEF2(p):
+    '''statement : DEF VAR LPAR paramList RPAR LBRACK blockList RBRACK SEMICOLOMN statementList'''
+    p[0] = [semantic.statement_DEF2(p[2].replace('#var',''),p[7],p[4])] + ["def"]
+
+def p_statementList(p):
+    '''statementList : statement
+    | statementList statement'''
+    if len(p.slice) > 2:
+        p[0] = (p.slice[1],p.slice[2])
+    else:
+        p[0] = (p.slice[1])
+
+def p_Exec(p):
+    '''statement : EXEC VAR LPAR paramList2 RPAR SEMICOLOMN'''
+    p[0] = [semantic.statement_Exec(p[2],p[4])] + ["exec"]
+
+def p_Exec2(p):
+    '''statement : EXEC VAR LPAR RPAR SEMICOLOMN'''
+    p[0] = [semantic.statement_Exec(p[2],"None")] + ["exec"]
+
+def p_paramList(p):
+    '''paramList : VAR
+    | VAR COMMA paramList'''
+    if len(p.slice) > 2:
+        p[0] = str(p[0]) + "," + str(p[3])
+    else:
+        p[0] = str(p[0])
+
+def p_paramList2(p):
+    '''paramList2 : VAR
+    | NUMBER
+    | VAR COMMA paramList2
+    | NUMBER COMMA paramList2'''
+    if len(p.slice) > 2:
+        p[0] = str(p[0]) + "," + str(p[3])
+    else:
+        p[0] = str(p[0])
 
 
 def p_statement_print(p):
@@ -227,7 +266,7 @@ def p_factor(p):
 
 def p_number(p):
     '''number : NUMBER'''
-    p[0] = str(p[1]) + ","
+    p[0] = str(p[1])+","
 
 def p_float(p):
     '''float : NUMBER POINT NUMBER'''
@@ -243,7 +282,7 @@ def p_false(p):
 
 def p_var(p):
     '''var : VAR'''
-    p[0] = str(p[1]) + "#var"
+    p[0] = str(p[1]) + ",#var"
 
 def p_string(p):
     '''string : QUOT id_list QUOT'''
@@ -325,7 +364,7 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-def Parsear(cadena,box):
+def Parsear(cadena,box,flag):
     semantic.methods = []
     semantic.global_vars = []
     lex.analyzer.lineno = 0
@@ -336,15 +375,18 @@ def Parsear(cadena,box):
     #lex.TokenGen(cadena)
     result = parser.parse(cadena)
     detected = False
-    if semantic.methods != []:
+    if flag:
+        if semantic.methods != []:
 
-        for i in semantic.methods:
-            if i.GetName() == "@Principal":
-                detected = True
-                semantic.CreateListInstruccions()
-                i.Execute()
-                semantic.StartArduinoExecution()
-                #INSTRUCCION semantic.FUNCION()
-                break
-        if not detected:
-            semantic.PrintText("No se encontro el metodo principal")
+            for i in semantic.methods:
+                if i.GetName() == "@Principal":
+                    detected = True
+                    #semantic.CreateListInstruccions()
+                    i.Execute()
+                    #semantic.StartArduinoExecution()
+                    #INSTRUCCION semantic.FUNCION()
+                    break
+            if not detected:
+                semantic.PrintText("No se encontro el metodo principal")
+        else:
+            semantic.PrintText("Compilado")

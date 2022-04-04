@@ -5,11 +5,11 @@ sys.path.insert(0, "../..")
 from COMP.ply import lex
 
 reserved = ['SET','DEF','IF','FOR','ELSE','ENCASO','ENTONS','TO','STEP','CUANDO','SINO','FINENCASO',
-            'TRUE','FALSE','WHILE']
+            'TRUE','FALSE','EXEC']
 
 tokens = reserved +['ID','VAR','NUMBER', 'PLUS', 'MINUS', 'TIMES', 'POWER', 'DIV', 'FULLDIV','QUOT',
                     'MODULE','COMMA', 'SEMICOLOMN','GREATER', 'SMALLER', 'RPAR', 'LPAR', 'LBRACK',
-                    'RBRACK', 'GREATEQ','SMALLEQ','EQUALS','POINT','SAME','DIFF']
+                    'RBRACK', 'GREATEQ','SMALLEQ','EQUALS','POINT','DIFF']
 
 t_POINT = r'[.]'
 t_COMMA = r'[,]'
@@ -30,7 +30,6 @@ t_SMALLEQ = r'<='
 t_ignore = r' '
 t_EQUALS = r'=='
 t_FULLDIV = r'//'
-t_SAME = r'='
 t_DIFF = r'<>'
 t_QUOT = r'"'
 
